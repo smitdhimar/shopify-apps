@@ -1,11 +1,11 @@
 
-   locals {
-    lambda_functions = ["fera-handler"]
-  }
-  # ======================= LAMBDA ROLE AND POLICY =======================
-  resource "aws_iam_role" "lambda_execution_role" {
-    name               = "aws_lambda_role"
-    assume_role_policy = <<EOF
+locals {
+  lambda_functions = ["fera-handler"]
+}
+# ======================= LAMBDA ROLE AND POLICY =======================
+resource "aws_iam_role" "lambda_execution_role" {
+  name               = "aws_lambda_role"
+  assume_role_policy = <<EOF
   {
   "Version": "2012-10-17",
   "Statement": [
@@ -20,13 +20,13 @@
   ]
   }
   EOF
-  }
+}
 
-  resource "aws_iam_policy" "iam_policy_for_lambda" {
-    name        = "aws_iam_policy_for_aws_lambda_role"
-    path        = "/"
-    description = "AWS IAM Policy for managing AWS Lambda role"
-    policy      = <<EOF
+resource "aws_iam_policy" "iam_policy_for_lambda" {
+  name        = "aws_iam_policy_for_aws_lambda_role"
+  path        = "/"
+  description = "AWS IAM Policy for managing AWS Lambda role"
+  policy      = <<EOF
   {
   "Version": "2012-10-17",
   "Statement": [
@@ -42,35 +42,35 @@
   ]
   }
   EOF
-  }
+}
 
-  resource "aws_iam_role_policy_attachment" "lambda_default_policy_attachment" {
-    role       = aws_iam_role.lambda_execution_role.name
-    policy_arn = aws_iam_policy.iam_policy_for_lambda.arn
-  }
+resource "aws_iam_role_policy_attachment" "lambda_default_policy_attachment" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.iam_policy_for_lambda.arn
+}
 
-  # ======================= LAMBDA FUNCTION =======================
+# ======================= LAMBDA FUNCTION =======================
 
-  data "archive_file" "zip_the_lambda_code" {
-    for_each = toset(local.lambda_functions)
+data "archive_file" "zip_the_lambda_code" {
+  for_each = toset(local.lambda_functions)
 
-    type        = "zip"
-    source_dir  = "${path.module}/functions/${each.key}"
-    output_path = "${path.module}/functions/${each.key}.zip"
-    excludes    = ["**/*.zip"]
-  }
+  type        = "zip"
+  source_dir  = "${path.module}/functions/${each.key}"
+  output_path = "${path.module}/functions/${each.key}.zip"
+  excludes    = ["**/*.zip"]
+}
 
-  resource "aws_lambda_function" "lambda_function" {
-    for_each = toset(local.lambda_functions)
+resource "aws_lambda_function" "lambda_function" {
+  for_each = toset(local.lambda_functions)
 
-    function_name = each.key
+  function_name = each.key
   handler       = "index.handler"
   runtime       = "nodejs18.x"
-    filename      = data.archive_file.zip_the_lambda_code[each.key].output_path
-    role          = aws_iam_role.lambda_execution_role.arn
-    timeout       = 180
+  filename      = data.archive_file.zip_the_lambda_code[each.key].output_path
+  role          = aws_iam_role.lambda_execution_role.arn
+  timeout       = 180
 
-    source_code_hash = data.archive_file.zip_the_lambda_code[each.key].output_base64sha256
+  source_code_hash = data.archive_file.zip_the_lambda_code[each.key].output_base64sha256
 
-  
-  }
+
+}
