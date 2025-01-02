@@ -10,7 +10,8 @@ export const handler = async (event) => {
 
   const API_BASE_URL = process.env.FERA_BASEURL;
   const {
-    path,
+    resource,
+
     httpMethod,
     body: _body,
     pathParameters,
@@ -18,16 +19,17 @@ export const handler = async (event) => {
   } = event;
 
   const body = _body?.length > 0 ? JSON.parse(_body) : null;
-  const pathAction = getPathAction(path, httpMethod);
+  const pathAction = getPathAction(resource, httpMethod);
 
   console.log("🔥 pathAction", pathAction);
   try {
     switch (pathAction) {
       case "CREATE_REVIEW":
-        const createReviewResponse = await handleCreateReview(
-          API_BASE_URL,
-          body
-        );
+        const url = `${API_BASE_URL}/reviews`;
+
+        const createReviewResponse = await fetchApi(url, "POST", {
+          data: body,
+        });
         return buildResponse(
           createReviewResponse.status,
           createReviewResponse.data
@@ -40,7 +42,7 @@ export const handler = async (event) => {
           null,
           queryStringParameters
         );
-        console.log('🔥 first', fetchReviewsResponse)
+
         return buildResponse(
           fetchReviewsResponse.status,
           fetchReviewsResponse.data
@@ -50,7 +52,9 @@ export const handler = async (event) => {
         const updateReviewResponse = await fetchApi(
           `${API_BASE_URL}/reviews/${pathParameters.id}`,
           "PUT",
-          body
+          {
+            data: body,
+          }
         );
         return buildResponse(
           updateReviewResponse.status,
@@ -66,16 +70,5 @@ export const handler = async (event) => {
       message: error.message || "Internal Server Error",
       data: error?.data || null,
     });
-  }
-};
-
-export const handleCreateReview = async (API_BASE_URL, payload) => {
-  try {
-    const url = `${API_BASE_URL}/reviews`;
-    const response = await fetchApi(url, "POST", { data: payload });
-
-    return response;
-  } catch (error) {
-    throw error;
   }
 };
