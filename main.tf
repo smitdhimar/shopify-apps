@@ -4,5 +4,7 @@ module "api_gateway" {
 }
 
 module "lambda" {
-  source = "./lambda"
+  source       = "./lambda"
+  fera_token   = var.fera_token
+  fera_baseurl = var.fera_baseurl
 }

@@ -60,17 +60,20 @@ data "archive_file" "zip_the_lambda_code" {
   excludes    = ["**/*.zip"]
 }
 
-resource "aws_lambda_function" "lambda_function" {
-  for_each = toset(local.lambda_functions)
+resource "aws_lambda_function" "fera-handler" {
+  function_name    = "fera-handler"
+  role             = aws_iam_role.lambda_execution_role.arn
+  handler          = "index.handler"
+  runtime          = "nodejs18.x"
+  filename         = data.archive_file.zip_the_lambda_code["fera-handler"].output_path
+  source_code_hash = data.archive_file.zip_the_lambda_code["fera-handler"].output_base64sha256
+  publish          = true
+  timeout          = 180
 
-  function_name = each.key
-  handler       = "index.handler"
-  runtime       = "nodejs18.x"
-  filename      = data.archive_file.zip_the_lambda_code[each.key].output_path
-  role          = aws_iam_role.lambda_execution_role.arn
-  timeout       = 180
-
-  source_code_hash = data.archive_file.zip_the_lambda_code[each.key].output_base64sha256
-
-
+  environment {
+    variables = {
+      FERA_TOKEN   = var.fera_token
+      FERA_BASEURL = var.fera_baseurl
+    }
+  }
 }

@@ -1,2 +1,10 @@
 .terraform
 terraform.tfstate*
+
+cello.tfvars
+**/node_modules/
+*.zip
+
+**/.api/
+**/.apis/
+
