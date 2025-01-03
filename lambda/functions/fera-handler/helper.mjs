@@ -16,9 +16,10 @@ export const buildResponse = (statusCode, body) => ({
 });
 
 export const getPathAction = (path, httpMethod) => {
-  if (path === "/review" && httpMethod === "POST") return "CREATE_REVIEW";
-  if (path === "/reviews" && httpMethod === "GET") return "FETCH_REVIEWS";
-  if (path === "/reviews/{id}" && httpMethod === "PUT") return "UPDATE_REVIEW";
+  if (path === "/fera/review" && httpMethod === "POST") return "CREATE_REVIEW";
+  if (path === "/fera/reviews" && httpMethod === "GET") return "FETCH_REVIEWS";
+  if (path === "/fera/reviews/{id}" && httpMethod === "PUT")
+    return "UPDATE_REVIEW";
   return "UNKNOWN";
 };
 

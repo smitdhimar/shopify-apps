@@ -10,8 +10,13 @@ resource "aws_apigatewayv2_stage" "api_gateway_stage" {
 }
 
 resource "aws_lambda_permission" "allow_api_gateway" {
-  statement_id  = "AllowApiGatewayInvoke"
+  for_each = toset(var.lambda_functions)
+
+  statement_id  = "AllowApiGatewayInvoke-${each.value}"
   action        = "lambda:InvokeFunction"
   principal     = "apigateway.amazonaws.com"
-  function_name = var.fera-handler.function_name
+  function_name = each.value
+
+  # Replace this with your API Gateway ARN pattern
+  source_arn = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
 }

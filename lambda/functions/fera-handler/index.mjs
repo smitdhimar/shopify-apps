@@ -1,9 +1,8 @@
 import {
-  buildResponse,
   fetchApi,
   getPathAction,
-  errorHandler,
 } from "./helper.mjs";
+import { buildResponse } from './helper.mjs';
 
 export const handler = async (event) => {
   console.log("🔥 Event received:", event);
