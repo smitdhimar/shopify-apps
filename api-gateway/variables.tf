@@ -4,7 +4,7 @@ variable "fera-handler" {
   type        = any
 }
 
-variable "search-handler" {
+variable "filter-handler" {
   description = "The name of the stack"
   type        = any
 }

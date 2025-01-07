@@ -4,7 +4,7 @@ const SHOPIFY_API_URL_TEMPLATE = `https://{storeName}.myshopify.com/api/2025-01/
 
 const getPathAction = (path, httpMethod) => {
   const routes = {
-    "/search/products:GET": "SEARCH_PRODUCTS",
+    "/filter/products:GET": "FILTER_PRODUCTS",
   };
   return routes[`${path}:${httpMethod}`] || "UNKNOWN";
 };
@@ -17,9 +17,6 @@ export const handler = async (event) => {
     "{storeName}",
     STORE_NAME
   );
-
-  console.log("🔥 SHOPIFY_ACCESS_TOKEN", SHOPIFY_ACCESS_TOKEN);
-  console.log("🔥 SHOPIFY_API_URL", SHOPIFY_API_URL);
 
   const { resource, httpMethod, queryStringParameters } = event;
 
@@ -36,12 +33,14 @@ export const handler = async (event) => {
     predictive = "false",
   } = queryStringParameters || {};
 
+  console.log("🔥 event", event);
   const pathAction = getPathAction(resource, httpMethod);
   console.log("🔥 Path Action:", pathAction);
+  console.log("🔥 Path queryStringParameters:", queryStringParameters);
 
   try {
     switch (pathAction) {
-      case "SEARCH_PRODUCTS":
+      case "FILTER_PRODUCTS":
         if (predictive === "true" && search) {
           return await handlePredictiveSearch({
             search,
@@ -50,7 +49,7 @@ export const handler = async (event) => {
           });
         }
 
-        return await handleSearch({
+        return await handleFilter({
           search,
           sortBy,
           sortOrder,
@@ -122,8 +121,7 @@ const handlePredictiveSearch = async ({
     throw new Error("Failed to fetch predictive search results.");
   }
 };
-
-const handleSearch = async ({
+const handleFilter = async ({
   search,
   sortBy,
   sortOrder,
@@ -136,7 +134,13 @@ const handleSearch = async ({
   SHOPIFY_ACCESS_TOKEN,
 }) => {
   try {
-    const offset = (page - 1) * pageSize;
+    // Determine the cursor for the current page
+    const first = parseInt(pageSize, 10);
+    const after =
+      page > 1
+        ? Buffer.from(`${(page - 1) * pageSize}`).toString("base64")
+        : null;
+
     const query = `
       query SearchProducts(
           $search: String!,
@@ -144,7 +148,7 @@ const handleSearch = async ({
           $after: String,
           $sortKey: ProductSortKeys,
           $reverse: Boolean
-        ) {
+      ) {
           products(query: $search, first: $first, after: $after, sortKey: $sortKey, reverse: $reverse) {
             edges {
               cursor
@@ -164,13 +168,13 @@ const handleSearch = async ({
               endCursor
             }
           }
-        }
+      }
     `;
 
     const variables = {
       search,
-      first: pageSize,
-      offset: offset.toString(),
+      first,
+      after,
       sortKey: sortBy === "title" ? "TITLE" : "PRICE",
       reverse: sortOrder === "desc",
     };
@@ -187,11 +191,14 @@ const handleSearch = async ({
     const { data, errors } = await response.json();
 
     if (errors) {
-      errorHandler(errors[0], "handleSearch");
+      errorHandler(errors[0], "handleFilter");
       throw new Error("Failed to fetch search results from Shopify.");
     }
 
-    let products = data.products.edges.map(({ node }) => ({
+    const edges = data.products.edges;
+    const pageInfo = data.products.pageInfo;
+
+    let products = edges.map(({ node }) => ({
       id: node.id,
       title: node.title,
       price: parseFloat(node.priceRange.minVariantPrice.amount),
@@ -211,10 +218,10 @@ const handleSearch = async ({
       message: "Success",
       data: products,
       pagination: {
-        page,
+        currentPage: page,
         pageSize,
-        total: products.length,
-        totalPages: Math.ceil(products.length / pageSize),
+        hasNextPage: pageInfo.hasNextPage,
+        nextCursor: pageInfo.endCursor,
       },
     });
   } catch (error) {

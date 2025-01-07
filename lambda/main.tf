@@ -1,6 +1,6 @@
 
 locals {
-  lambda_functions = ["fera-handler", "search-handler"]
+  lambda_functions = ["fera-handler", "filter-handler"]
   # layers           = []
 }
 # ======================= LAMBDA ROLE AND POLICY =======================
@@ -104,13 +104,13 @@ resource "aws_lambda_function" "fera-handler" {
 
 }
 
-resource "aws_lambda_function" "search-handler" {
-  function_name    = "search-handler"
+resource "aws_lambda_function" "filter-handler" {
+  function_name    = "filter-handler"
   role             = aws_iam_role.lambda_execution_role.arn
   handler          = "index.handler"
   runtime          = "nodejs20.x"
-  filename         = data.archive_file.zip_the_lambda_code["search-handler"].output_path
-  source_code_hash = data.archive_file.zip_the_lambda_code["search-handler"].output_base64sha256
+  filename         = data.archive_file.zip_the_lambda_code["filter-handler"].output_path
+  source_code_hash = data.archive_file.zip_the_lambda_code["filter-handler"].output_base64sha256
   publish          = true
   timeout          = 180
 
