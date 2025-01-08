@@ -4,8 +4,8 @@ variable "fera-handler" {
   type        = any
 }
 
-variable "filter-handler" {
-  description = "The name of the stack"
+variable "search-handler" {
+  description = "The name of the lambda function used for the search query."
   type        = any
 }
 

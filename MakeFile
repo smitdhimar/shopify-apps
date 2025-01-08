@@ -1,7 +1,5 @@
-# Makefile
-
 # Default target when running `make`
-.PHONY: cello-plan
+.PHONY: cello-plan cello-apply
 
 # Define Terraform variables file
 TFVARS_FILE = cello.tfvars
@@ -9,9 +7,11 @@ TFVARS_FILE = cello.tfvars
 # Terraform Plan target
 cello-plan:
 	@echo "Running terraform plan with ${TFVARS_FILE}..."
-	terraform fmt -recursive 
+	terraform fmt -recursive
 	terraform plan -var-file=${TFVARS_FILE}
+
+# Terraform Apply target
 cello-apply:
-	@echo "Running terraform plan with ${TFVARS_FILE}..."
-	terraform fmt -recursive 
+	@echo "Running terraform apply with ${TFVARS_FILE}..."
+	terraform fmt -recursive
 	terraform apply -var-file=${TFVARS_FILE} --auto-approve

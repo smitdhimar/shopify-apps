@@ -8,12 +8,23 @@ variable "fera_baseurl" {
   type        = string
 }
 
-variable "shopify_token" {
-  description = "shopify token"
+# the below described variables are stored for test maybe discarded later
+variable "search_x_client_token" {
+  description = "The fist token described in the search_x search api this might change later"
   type        = string
 }
 
-variable "shopify_store" {
-  description = "shopify store"
+variable "search_x_datasource_token" {
+  description = "The second token described in the search_x search api this might change later"
   type        = string
+}
+
+variable "search_x_bearer_token" {
+  description = "Bearer token for the search_x search api"
+  type        = string
+}
+
+variable "threshold" {
+  description = "threshold used for string matching"
+  type        = number
 }

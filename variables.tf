@@ -8,12 +8,22 @@ variable "fera_baseurl" {
   type        = string
 }
 
-variable "shopify_token" {
-  description = "shopify token"
+variable "search_x_bearer_token" {
+  description = "search_x bearer token for authorization"
   type        = string
 }
 
-variable "shopify_store" {
-  description = "shopify store"
+variable "search_x_client_token" {
+  description = "search_x client token"
   type        = string
+}
+
+variable "search_x_datasource_token" {
+  description = "search_x datasource token"
+  type        = string
+}
+
+variable "threshold" {
+  description = "threshold used for string matching"
+  type        = number
 }
