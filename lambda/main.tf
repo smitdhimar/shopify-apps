@@ -1,7 +1,7 @@
 
 locals {
   lambda_functions = ["fera-handler", "search-handler"]
-  # layers           = []
+  layers           = ["api-helper"]
 }
 # ======================= LAMBDA ROLE AND POLICY =======================
 resource "aws_iam_role" "lambda_execution_role" {
@@ -35,9 +35,13 @@ resource "aws_iam_policy" "iam_policy_for_lambda" {
         "Action": [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
-          "logs:PutLogEvents"
+          "logs:PutLogEvents",
+          "lambda:GetLayerVersion"
         ],
-        "Resource": "arn:aws:logs:*:*:*",
+        "Resource": [
+        "arn:aws:logs:*:*:*",
+        "arn:aws:lambda:*:*:layer:api-helper:*"
+        ],
         "Effect": "Allow"
       }
   ]
@@ -52,24 +56,25 @@ resource "aws_iam_role_policy_attachment" "lambda_default_policy_attachment" {
 
 
 #============================== layers ==============================
-# data "archive_file" "zip_the_layer_code" {
-#   for_each = toset(local.layers)
 
-#   type        = "zip"
-#   source_dir  = "${path.module}/layers/${each.key}"
-#   output_path = "${path.module}/layers/${each.key}.zip"
-#   excludes    = ["**/*.zip"]
-# }
+data "archive_file" "zip_the_layer_code" {
+  for_each = toset(local.layers)
 
-# # Define Lambda layer versions for each layer
-# resource "aws_lambda_layer_version" "layer" {
-#   for_each = data.archive_file.zip_the_layer_code
+  type        = "zip"
+  source_dir  = "${path.module}/layers/${each.key}"
+  output_path = "${path.module}/layers/${each.key}.zip"
+  excludes    = ["**/*.zip"]
+}
 
-#   layer_name          = each.key
-#   filename            = each.value.output_path
-#   source_code_hash    = each.value.output_base64sha256
-#   compatible_runtimes = ["nodejs20.x"]
-# }
+# Define Lambda layer versions for each layer
+resource "aws_lambda_layer_version" "api-helper" {
+
+  layer_name          = "api-helper"
+  filename            = data.archive_file.zip_the_layer_code["api-helper"].output_path
+  source_code_hash    = data.archive_file.zip_the_layer_code["api-helper"].output_base64sha256
+  compatible_runtimes = ["nodejs20.x"]
+  skip_destroy        = true
+}
 
 # ======================= LAMBDA FUNCTION =======================
 data "archive_file" "zip_the_lambda_code" {
@@ -90,7 +95,8 @@ resource "aws_lambda_function" "fera-handler" {
   source_code_hash = data.archive_file.zip_the_lambda_code["fera-handler"].output_base64sha256
   publish          = true
   timeout          = 180
-
+  layers           = [aws_lambda_layer_version.api-helper.arn]
+  depends_on       = [aws_lambda_layer_version.api-helper]
   tracing_config {
     mode = "Active"
   }
@@ -114,7 +120,8 @@ resource "aws_lambda_function" "search-handler" {
   source_code_hash = data.archive_file.zip_the_lambda_code["search-handler"].output_base64sha256
   publish          = true
   timeout          = 180
-
+  layers           = [aws_lambda_layer_version.api-helper.arn]
+  depends_on       = [aws_lambda_layer_version.api-helper]
   tracing_config {
     mode = "Active"
   }

@@ -1,21 +1,26 @@
 import {
   fetchApi,
   getPathAction,
-} from "./helper.mjs";
-import { buildResponse } from './helper.mjs';
+  buildResponse
+} from "/opt/nodejs/helper.mjs";
 
 export const handler = async (event) => {
   console.log("🔥 Event received:", event);
 
   const API_BASE_URL = process.env.FERA_BASEURL;
+
   const {
     resource,
-
     httpMethod,
     body: _body,
     pathParameters,
     queryStringParameters,
   } = event;
+
+  const authConfig = {
+    tokenKeyConvention: "SECRET-KEY",
+    tokenForAuthorization: process.env.FERA_TOKEN,
+  };
 
   const body = _body?.length > 0 ? JSON.parse(_body) : null;
   const pathAction = getPathAction(resource, httpMethod);
@@ -26,7 +31,7 @@ export const handler = async (event) => {
       case "CREATE_REVIEW":
         const url = `${API_BASE_URL}/reviews`;
 
-        const createReviewResponse = await fetchApi(url, "POST", {
+        const createReviewResponse = await fetchApi(url, "POST", authConfig, {
           data: body,
         });
         return buildResponse(
@@ -38,6 +43,7 @@ export const handler = async (event) => {
         const fetchReviewsResponse = await fetchApi(
           `${API_BASE_URL}/reviews`,
           "GET",
+          authConfig,
           null,
           queryStringParameters
         );
@@ -51,6 +57,7 @@ export const handler = async (event) => {
         const updateReviewResponse = await fetchApi(
           `${API_BASE_URL}/reviews/${pathParameters.id}`,
           "PUT",
+          authConfig,
           {
             data: body,
           }

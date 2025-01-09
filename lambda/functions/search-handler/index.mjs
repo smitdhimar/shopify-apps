@@ -1,7 +1,7 @@
 import {
     fetchApi,
     buildResponse
-} from "./helper.mjs";
+} from "/opt/nodejs/helper.mjs";
 
 export const handler = async (event) => {
     console.log("🔥 Event received:", event);
@@ -18,7 +18,10 @@ export const handler = async (event) => {
 
     queryStringParameters.limit = 20;
     queryStringParameters.threshold = THRESHOLD;
-
+    const authConfig = {
+        tokenKeyConvention: "Authorization",
+        tokenForAuthorization: process.env.SEARCH_X_BEARER_TOKEN,
+    };
     try {
         if (httpMethod === "GET") {
             const fetchProductsResponse = await fetchApi(
@@ -26,6 +29,8 @@ export const handler = async (event) => {
                 //tokens and endpoint being attached to the base url
                 `${API_BASE_URL}${CLIENT_TOKEN}/datasource/${DATASOURCE_TOKEN}/search`,
                 "GET",
+                authConfig,
+                null,
                 queryStringParameters
             );
 

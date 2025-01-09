@@ -1,8 +1,14 @@
-export const getHeaders = (contentType = "application/json") => ({
-  "SECRET-KEY": process.env.FERA_TOKEN,
-  Accept: "application/json",
-  "Content-Type": contentType,
-});
+export const getHeaders = (
+  authConfig,
+  contentType = "application/json"
+) => {
+
+  return {
+    [authConfig.tokenKeyConvention]: authConfig.tokenForAuthorization,
+    Accept: "application/json",
+    "Content-Type": contentType,
+  };
+};
 
 export const errorHandler = (error, functionName) => {
   console.error(`❌ Error in ${functionName}:`, error.message);
@@ -15,6 +21,7 @@ export const buildResponse = (statusCode, body) => ({
   body: JSON.stringify(body),
 });
 
+//getPathAction currently only used for fera-handler. can be changed by adding prefix to path and then can be compared.
 export const getPathAction = (path, httpMethod) => {
   if (path === "/fera/review" && httpMethod === "POST") return "CREATE_REVIEW";
   if (path === "/fera/reviews" && httpMethod === "GET") return "FETCH_REVIEWS";
@@ -23,17 +30,22 @@ export const getPathAction = (path, httpMethod) => {
   return "UNKNOWN";
 };
 
-export const fetchApi = async (baseUrl, method, body = null, params = null) => {
+export const fetchApi = async (
+  baseUrl,
+  method,
+  authConfig,
+  body = null,
+  params = null
+) => {
   const url = buildUrlWithParams(baseUrl, params);
 
   console.log("🔥 url", url);
   console.log("🔥 body", body);
   console.log("🔥 params", params, typeof params);
-  console.log("🔥 getHeaders", getHeaders());
 
   const response = await fetch(url, {
     method,
-    headers: getHeaders(),
+    headers: getHeaders(authConfig),
     body: body ? JSON.stringify(body) : null,
   });
 
