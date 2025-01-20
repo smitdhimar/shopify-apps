@@ -27,3 +27,9 @@ variable "threshold" {
   description = "threshold used for string matching"
   type        = number
 }
+
+variable "image_bucket" {
+  description = "S3 bucket name"
+  type        = string
+
+}

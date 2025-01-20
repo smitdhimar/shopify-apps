@@ -15,3 +15,25 @@ module "lambda" {
   search_x_datasource_token = var.search_x_datasource_token
 }
 
+module "s3_buckets" {
+  source                           = "./s3-buckets"
+  cloudfront_oai_canonical_user_id = module.cloudfronts.cloudfront_oai_canonical_user_id
+  image_bucket                     = var.image_bucket
+}
+
+module "cloudfronts" {
+  source                = "./cloudfronts"
+  s3_bucket_domain_name = module.s3_buckets.bucket_domain_name
+  s3_bucket_id          = module.s3_buckets.bucket_id
+}
+
+module "amplify" {
+  source       = "./amplify"
+  image_bucket = module.s3_buckets.bucket_name
+}
+
+module "cognitoPoolIdentity" {
+  source       = "./cognitoPoolIdentity"
+  image_bucket = module.s3_buckets.bucket_name
+}
+
