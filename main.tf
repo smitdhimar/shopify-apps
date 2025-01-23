@@ -1,8 +1,9 @@
 module "api_gateway" {
-  source           = "./api-gateway"
-  fera-handler     = module.lambda.fera-handler
-  search-handler   = module.lambda.search-handler
-  lambda_functions = module.lambda.lambda_functions
+  source                   = "./api-gateway"
+  fera-handler             = module.lambda.fera-handler
+  search-handler           = module.lambda.search-handler
+  personalizer-app-handler = module.lambda.personalizer-app-handler
+  lambda_functions         = module.lambda.lambda_functions
 }
 
 module "lambda" {
@@ -13,6 +14,8 @@ module "lambda" {
   search_x_bearer_token     = var.search_x_bearer_token
   search_x_client_token     = var.search_x_client_token
   search_x_datasource_token = var.search_x_datasource_token
+  image_set_table_name      = var.image_set_table_name
+  backend_role_arn          = module.Dynamo.backend_role_arn
 }
 
 module "s3_buckets" {
@@ -37,3 +40,8 @@ module "cognitoPoolIdentity" {
   image_bucket = module.s3_buckets.bucket_name
 }
 
+module "Dynamo" {
+  source               = "./Dynamo"
+  image_set_table_name = var.image_set_table_name
+  products_table_name  = var.products_table_name
+}

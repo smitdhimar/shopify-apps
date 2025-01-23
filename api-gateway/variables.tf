@@ -9,6 +9,11 @@ variable "search-handler" {
   type        = any
 }
 
+variable "personalizer-app-handler" {
+  description = "The name of the lambda function used for presonalization app."
+  type        = any
+}
+
 variable "lambda_functions" {
   description = "The name of the stack"
   type        = any

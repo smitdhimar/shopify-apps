@@ -6,7 +6,7 @@ locals {
 # s3 buckets
 resource "aws_s3_bucket" "image_bucket" {
   bucket = local.s3_buckets[0]
-} 
+}
 
 # Set bucket ownership controls
 resource "aws_s3_bucket_ownership_controls" "image_bucket_ownership" {

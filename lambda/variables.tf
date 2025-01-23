@@ -28,3 +28,13 @@ variable "threshold" {
   description = "threshold used for string matching"
   type        = number
 }
+
+variable "image_set_table_name" {
+  description = "name of the image set table"
+  type        = string
+}
+
+variable "backend_role_arn" {
+  description = "backend role"
+  type        = string
+}

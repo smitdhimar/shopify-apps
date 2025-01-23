@@ -1,4 +1,4 @@
-    # Create Origin Access Identity for CloudFront
+# Create Origin Access Identity for CloudFront
 resource "aws_cloudfront_origin_access_identity" "oai" {
   comment = "OAI for Image CDN"
 }
@@ -29,6 +29,7 @@ resource "aws_cloudfront_distribution" "image_cdn" {
       cookies {
         forward = "none"
       }
+      headers = ["Origin", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
     }
 
     viewer_protocol_policy = "redirect-to-https"

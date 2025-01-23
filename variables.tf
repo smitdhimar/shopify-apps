@@ -33,3 +33,13 @@ variable "image_bucket" {
   type        = string
 
 }
+variable "image_set_table_name" {
+  description = "table name for image sets"
+  type        = string
+}
+
+variable "products_table_name" {
+  description = "table name for products of personalizer app"
+  type        = string
+
+}

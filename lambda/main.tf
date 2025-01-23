@@ -1,7 +1,7 @@
 
 locals {
-  lambda_functions = ["fera-handler", "search-handler"]
-  layers           = ["api-helper"]
+  lambda_functions = ["fera-handler", "search-handler", "personalizer-app-handler"]
+  layers           = ["api-helper", "package"]
 }
 # ======================= LAMBDA ROLE AND POLICY =======================
 resource "aws_iam_role" "lambda_execution_role" {
@@ -49,6 +49,7 @@ resource "aws_iam_policy" "iam_policy_for_lambda" {
   EOF
 }
 
+
 resource "aws_iam_role_policy_attachment" "lambda_default_policy_attachment" {
   role       = aws_iam_role.lambda_execution_role.name
   policy_arn = aws_iam_policy.iam_policy_for_lambda.arn
@@ -76,6 +77,13 @@ resource "aws_lambda_layer_version" "api-helper" {
   skip_destroy        = true
 }
 
+resource "aws_lambda_layer_version" "package" {
+  layer_name          = "package"
+  filename            = data.archive_file.zip_the_layer_code["package"].output_path
+  source_code_hash    = data.archive_file.zip_the_layer_code["package"].output_base64sha256
+  compatible_runtimes = ["nodejs20.x"]
+  skip_destroy        = false
+}
 # ======================= LAMBDA FUNCTION =======================
 data "archive_file" "zip_the_lambda_code" {
   for_each = toset(local.lambda_functions)
@@ -106,10 +114,7 @@ resource "aws_lambda_function" "fera-handler" {
       FERA_BASEURL = var.fera_baseurl
     }
   }
-
-
 }
-
 
 resource "aws_lambda_function" "search-handler" {
   function_name    = "search-handler"
@@ -132,6 +137,27 @@ resource "aws_lambda_function" "search-handler" {
       SEARCH_X_DATASOURCE_TOKEN = var.search_x_datasource_token
       SEARCH_X_BEARER_TOKEN     = var.search_x_bearer_token
       THRESHOLD                 = var.threshold
+    }
+  }
+}
+
+resource "aws_lambda_function" "personalizer-app-handler" {
+  function_name    = "personalizer-app-handler"
+  role             = var.backend_role_arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  filename         = data.archive_file.zip_the_lambda_code["personalizer-app-handler"].output_path
+  source_code_hash = data.archive_file.zip_the_lambda_code["personalizer-app-handler"].output_base64sha256
+  publish          = true
+  timeout          = 180
+  layers           = [aws_lambda_layer_version.package.arn, aws_lambda_layer_version.api-helper.arn]
+  depends_on       = [aws_lambda_layer_version.package, aws_lambda_layer_version.api-helper]
+  tracing_config {
+    mode = "Active"
+  }
+  environment {
+    variables = {
+      IMAGE_SET_TABLE_NAME = var.image_set_table_name
     }
   }
 }

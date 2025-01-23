@@ -1,8 +1,4 @@
-export const getHeaders = (
-  authConfig,
-  contentType = "application/json"
-) => {
-
+export const getHeaders = (authConfig, contentType = "application/json") => {
   return {
     [authConfig.tokenKeyConvention]: authConfig.tokenForAuthorization,
     Accept: "application/json",
@@ -23,10 +19,17 @@ export const buildResponse = (statusCode, body) => ({
 
 //getPathAction currently only used for fera-handler. can be changed by adding prefix to path and then can be compared.
 export const getPathAction = (path, httpMethod) => {
-  if (path === "/fera/review" && httpMethod === "POST") return "CREATE_REVIEW";
+  if (path === "/personalizer/image-sets" && httpMethod === "GET") return "FETCH_IMAGE_SETS";
   if (path === "/fera/reviews" && httpMethod === "GET") return "FETCH_REVIEWS";
-  if (path === "/fera/reviews/{id}" && httpMethod === "PUT")
-    return "UPDATE_REVIEW";
+  if (path==="/personalizer/productsOptions" && httpMethod==="GET") return "FETCH_PRODUCT_OPTIONS";
+  if (path=== "/personalizer/product/{id}" && httpMethod==="POST") return "IS_PRODUCT_CUSTOMIZED";
+  if (path === "/personalizer/image-set/{id}" && httpMethod === "GET") return "FETCH_IMAGE_SET";
+  if (path === "/fera/review" && httpMethod === "POST") return "CREATE_REVIEW";
+  if (path === "/fera/reviews/{id}" && httpMethod === "PUT") return "UPDATE_REVIEW";
+  if (path === "/personalizer/image-set/create" && httpMethod === "POST") return "CREATE_IMAGE_SET";
+  if (path === "/personalizer/image-set/{id}" && httpMethod === "PUT") return "UPDATE_IMAGE_SET";
+  if (path === "/personalizer/image-set/{id}" && httpMethod === "DELETE") return "DELETE_IMAGE_SET";
+
   return "UNKNOWN";
 };
 

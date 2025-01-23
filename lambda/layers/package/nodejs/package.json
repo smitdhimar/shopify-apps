@@ -1,0 +1,19 @@
+{
+  "name": "personalizer-app-handler",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "dev": "node --watch index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.731.1",
+    "@aws-sdk/lib-dynamodb": "^3.731.1",
+    "uuid": "^11.0.5"
+  }
+}
