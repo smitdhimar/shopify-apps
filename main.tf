@@ -15,7 +15,7 @@ module "lambda" {
   search_x_client_token     = var.search_x_client_token
   search_x_datasource_token = var.search_x_datasource_token
   image_set_table_name      = var.image_set_table_name
-  backend_role_arn          = module.Dynamo.backend_role_arn
+  backend_role_arn          = module.dynamo.backend_role_arn
 }
 
 module "s3_buckets" {
@@ -40,8 +40,8 @@ module "cognitoPoolIdentity" {
   image_bucket = module.s3_buckets.bucket_name
 }
 
-module "Dynamo" {
-  source               = "./Dynamo"
+module "dynamo" {
+  source               = "./dynamo"
   image_set_table_name = var.image_set_table_name
   products_table_name  = var.products_table_name
 }
