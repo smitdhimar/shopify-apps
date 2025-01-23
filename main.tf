@@ -16,6 +16,8 @@ module "lambda" {
   search_x_datasource_token = var.search_x_datasource_token
   image_set_table_name      = var.image_set_table_name
   backend_role_arn          = module.dynamo.backend_role_arn
+  shopify_store_name        = var.shopify_store_name
+  shopify_admin_token       = var.shopify_admin_token
 }
 
 module "s3_buckets" {

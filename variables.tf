@@ -43,3 +43,13 @@ variable "products_table_name" {
   type        = string
 
 }
+
+variable "shopify_store_name" {
+  description = "shopify store name"
+  type        = string
+}
+
+variable "shopify_admin_token" {
+  description = "shopify admin token"
+  type        = string
+}

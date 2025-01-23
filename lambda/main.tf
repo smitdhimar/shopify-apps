@@ -1,7 +1,6 @@
-
 locals {
   lambda_functions = ["fera-handler", "search-handler", "personalizer-app-handler"]
-  layers           = ["api-helper", "package"]
+  layers           = ["api-helper", "package", "shopify-apis"]
 }
 # ======================= LAMBDA ROLE AND POLICY =======================
 resource "aws_iam_role" "lambda_execution_role" {
@@ -84,6 +83,15 @@ resource "aws_lambda_layer_version" "package" {
   compatible_runtimes = ["nodejs20.x"]
   skip_destroy        = false
 }
+
+resource "aws_lambda_layer_version" "shopify-apis" {
+  layer_name          = "shopify-apis"
+  filename            = data.archive_file.zip_the_layer_code["shopify-apis"].output_path
+  source_code_hash    = data.archive_file.zip_the_layer_code["shopify-apis"].output_base64sha256
+  compatible_runtimes = ["nodejs20.x"]
+  skip_destroy        = false
+}
+
 # ======================= LAMBDA FUNCTION =======================
 data "archive_file" "zip_the_lambda_code" {
   for_each = toset(local.lambda_functions)
@@ -150,14 +158,24 @@ resource "aws_lambda_function" "personalizer-app-handler" {
   source_code_hash = data.archive_file.zip_the_lambda_code["personalizer-app-handler"].output_base64sha256
   publish          = true
   timeout          = 180
-  layers           = [aws_lambda_layer_version.package.arn, aws_lambda_layer_version.api-helper.arn]
-  depends_on       = [aws_lambda_layer_version.package, aws_lambda_layer_version.api-helper]
+  layers = [
+    aws_lambda_layer_version.package.arn,
+    aws_lambda_layer_version.api-helper.arn,
+    aws_lambda_layer_version.shopify-apis.arn
+  ]
+  depends_on = [
+    aws_lambda_layer_version.package,
+    aws_lambda_layer_version.api-helper,
+    aws_lambda_layer_version.shopify-apis
+  ]
   tracing_config {
     mode = "Active"
   }
   environment {
     variables = {
       IMAGE_SET_TABLE_NAME = var.image_set_table_name
+      SHOPIFY_STORE_NAME   = var.shopify_store_name
+      SHOPIFY_ADMIN_TOKEN  = var.shopify_admin_token
     }
   }
 }

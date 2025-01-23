@@ -40,3 +40,9 @@ resource "aws_apigatewayv2_route" "delete_image_set_route" {
   target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
 }
 
+# GET /personalizer/shopify-products Route
+resource "aws_apigatewayv2_route" "get_shopify_products_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /personalizer/shopify-products"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}

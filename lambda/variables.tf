@@ -38,3 +38,15 @@ variable "backend_role_arn" {
   description = "backend role"
   type        = string
 }
+
+variable "shopify_store_name" {
+  description = "Shopify store name"
+  type        = string
+}
+
+variable "shopify_admin_token" {
+  description = "Shopify admin access token"
+  type        = string
+  sensitive   = true
+}
+

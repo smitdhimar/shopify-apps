@@ -29,13 +29,13 @@ export const getPathAction = (path, httpMethod) => {
   if (path === "/personalizer/image-set/create" && httpMethod === "POST") return "CREATE_IMAGE_SET";
   if (path === "/personalizer/image-set/{id}" && httpMethod === "PUT") return "UPDATE_IMAGE_SET";
   if (path === "/personalizer/image-set/{id}" && httpMethod === "DELETE") return "DELETE_IMAGE_SET";
-  if (path === "/personalizer/" && httpMethod === "DELETE") return "DELETE_IMAGE_SET";
+  if (path === "/personalizer/shopify-products" && httpMethod === "GET") return "GET_SHOPIFY_PRODUCT";
 
   return "UNKNOWN";
 };
 
 export const fetchApi = async (
-  baseUrl,
+  baseUrl,  
   method,
   authConfig,
   body = null,
