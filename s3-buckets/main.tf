@@ -3,7 +3,7 @@ locals {
 
 }
 
-# s3 buckets
+# s3 bucket
 resource "aws_s3_bucket" "image_bucket" {
   bucket = local.s3_buckets[0]
 }
