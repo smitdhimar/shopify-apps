@@ -176,6 +176,7 @@ resource "aws_lambda_function" "personalizer-app-handler" {
       IMAGE_SET_TABLE_NAME = var.image_set_table_name
       SHOPIFY_STORE_NAME   = var.shopify_store_name
       SHOPIFY_ADMIN_TOKEN  = var.shopify_admin_token
+      PRODUCT_TABLE_NAME   = var.personalizer_product_table
     }
   }
 }

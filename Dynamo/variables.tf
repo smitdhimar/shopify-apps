@@ -3,7 +3,3 @@ variable "image_set_table_name" {
   type        = string
 }
 
-variable "products_table_name" {
-  description = "product's table name for personalizer app"
-  type        = string
-}

@@ -50,3 +50,7 @@ variable "shopify_admin_token" {
   sensitive   = true
 }
 
+variable "personalizer_product_table" {
+  description = "Personalizer product table"
+  type        = string
+}

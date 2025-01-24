@@ -46,3 +46,11 @@ resource "aws_apigatewayv2_route" "get_shopify_products_route" {
   route_key = "GET /personalizer/shopify-products"
   target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
 }
+
+
+# POST /personalizer/product Route
+resource "aws_apigatewayv2_route" "create_product_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /personalizer/product"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}

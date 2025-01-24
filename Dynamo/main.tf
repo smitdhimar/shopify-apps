@@ -1,4 +1,3 @@
-
 # --------------------------------
 # Dynamo DB Iam policy
 # --------------------------------
@@ -25,7 +24,7 @@ resource "aws_iam_policy" "dynamodb_access" {
         Resource = [
           "arn:aws:logs:*:*:*",
           "arn:aws:lambda:*:*:layer:api-helper:*",
-          "arn:aws:dynamodb:*:*:table/${var.image_set_table_name}"
+          "arn:aws:dynamodb:*:*:table/*"
         ]
       }
     ]
@@ -80,7 +79,7 @@ resource "aws_dynamodb_table" "image_sets_personlizer_app" {
 # Image Set Table
 # --------------------------------  
 resource "aws_dynamodb_table" "personalizer_products" {
-  name         = var.products_table_name
+  name         = "personalizer-product-table"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "id"
   attribute {
@@ -98,3 +97,9 @@ resource "aws_iam_role_policy_attachment" "attach_dynamodb_policy" {
   role       = aws_iam_role.backend_role.name
   policy_arn = aws_iam_policy.dynamodb_access.arn
 }
+
+# Get current AWS region
+data "aws_region" "current" {}
+
+
+

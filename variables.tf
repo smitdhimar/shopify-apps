@@ -38,11 +38,6 @@ variable "image_set_table_name" {
   type        = string
 }
 
-variable "products_table_name" {
-  description = "table name for products of personalizer app"
-  type        = string
-
-}
 
 variable "shopify_store_name" {
   description = "shopify store name"

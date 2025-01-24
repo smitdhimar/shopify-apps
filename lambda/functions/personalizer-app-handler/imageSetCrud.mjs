@@ -10,7 +10,8 @@ import {
   ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
 
-const client = new DynamoDBClient({ region: "us-west-1" });
+// Use AWS_REGION environment variable which is automatically set in Lambda
+const client = new DynamoDBClient({}); // Remove hardcoded region
 const docClient = DynamoDBDocumentClient.from(client);
 
 const tableName = process.env.IMAGE_SET_TABLE_NAME;
@@ -44,23 +45,25 @@ export const fetchImageSets = async () => {
 
     // Check if Items exist
     if (!result.Items || result.Items.length === 0) {
-      return buildResponse(200, {message:"No data found"});
+      return buildResponse(200, { message: "No data found" });
     }
 
-    return buildResponse(200, {message :"Images set returned", data: result.Items}); // Return the array of items
+    return buildResponse(200, {
+      message: "Images set returned",
+      data: result.Items,
+    }); // Return the array of items
   } catch (error) {
     console.error("❌ Error in fetchImageSets:", error);
     throw new Error("Failed to fetch image sets");
   }
 };
 
-
 // return body
 export const fetchImageSet = async (id) => {
   try {
     const command = new GetCommand({
       TableName: tableName,
-      Key: {id},
+      Key: { id },
     });
     const result = await docClient.send(command);
     // Check if an item was found
@@ -69,7 +72,10 @@ export const fetchImageSet = async (id) => {
     }
 
     // Return the fetched item
-    return buildResponse(200, { message: "Image Set Fetched", data: result.Item });
+    return buildResponse(200, {
+      message: "Image Set Fetched",
+      data: result.Item,
+    });
   } catch (error) {
     console.error("❌ Error in fetchImageSet:", error);
     return buildResponse(500, { message: error.message });
@@ -113,14 +119,13 @@ export const updateImageSet = async (body, id) => {
   }
 };
 
-
 // send Acknowledgement
 export const deleteImageSet = async (id) => {
   try {
     console.log("🔥 id", id);
     const command = new DeleteCommand({
       TableName: tableName,
-      Key: {id},
+      Key: { id },
     });
     const result = await docClient.send(command);
     return buildResponse(200, { message: "Image Set Deleted" });

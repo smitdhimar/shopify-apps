@@ -1,4 +1,4 @@
-import { buildResponse, getPathAction } from "/opt/nodejs/helper.mjs";
+import { buildResponse } from "/opt/nodejs/helper.mjs";
 import {
   createImageSet,
   fetchImageSets,
@@ -6,13 +6,21 @@ import {
   updateImageSet,
   deleteImageSet,
 } from "./imageSetCrud.mjs";
-import { getShopifyProduct } from "./productOptions/fetchProducts.mjs";
+import { getShopifyProduct } from "./shopifyHandler.mjs";
 import { errorHandler } from "/opt/nodejs/helper.mjs";
+import { getPathAction } from "./helper.mjs";
+import { createProduct } from "./productHandler.mjs";
 
 export const handler = async (event) => {
   console.log("🔥 Event received:", event);
 
-  const { resource, httpMethod, body: _body, pathParameters } = event;
+  const {
+    resource,
+    httpMethod,
+    body: _body,
+    pathParameters,
+    queryStringParameters,
+  } = event;
   const pathAction = getPathAction(resource, httpMethod);
   console.log("🔥 pathAction", pathAction);
   const body = _body?.length > 0 ? JSON.parse(_body) : null;
@@ -32,7 +40,9 @@ export const handler = async (event) => {
       case "DELETE_IMAGE_SET":
         return deleteImageSet(pathParameters.id);
       case "GET_SHOPIFY_PRODUCT":
-        return getShopifyProduct(pathParameters);
+        return getShopifyProduct(queryStringParameters);
+      case "CREATE_PRODUCT":
+        return createProduct(body);
       default:
         return buildResponse(404, { message: "❌ Resource Not Found" });
     }
