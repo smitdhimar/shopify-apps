@@ -1,6 +1,6 @@
 import { fetchShopifyGql } from "/opt/nodejs/fetchShopifyGQL/index.mjs";
 
-export const fetchProducts = async (after = null, first = 10) => {
+export const getShopifyProduct = async (after = null, first = 10) => {
   try {
     const variables = {
       first,
@@ -56,35 +56,13 @@ export const fetchProducts = async (after = null, first = 10) => {
     );
 
     console.log("🔥 response", response);
-    if (!response.data || !response.data.products) {
+
+    if (!response.data) {
       throw new Error("Invalid response from Shopify");
     }
 
-    const { edges, pageInfo } = response.data.products;
-
-    const products = edges.map(({ node }) => ({
-      id: node.id,
-      title: node.title,
-      handle: node.handle,
-      images: node.images.edges.map(({ node: image }) => ({
-        id: image.id,
-        url: image.url,
-        altText: image.altText,
-      })),
-      variants: node.variants.edges.map(({ node: variant }) => ({
-        id: variant.id,
-        title: variant.title,
-        price: variant.price,
-        sku: variant.sku,
-      })),
-    }));
-
     return {
-      products,
-      pageInfo: {
-        hasNextPage: pageInfo.hasNextPage,
-        endCursor: pageInfo.endCursor,
-      },
+      products: response.data.products,
     };
   } catch (error) {
     console.error("❌ Error fetching products:", error);

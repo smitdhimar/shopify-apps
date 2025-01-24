@@ -7,8 +7,7 @@ import {
   deleteImageSet,
 } from "./imageSetCrud.mjs";
 import { getShopifyProduct } from "./productOptions/fetchProducts.mjs";
-import { fetchProducts } from "./productOptions/fetchProducts.mjs";
-import { handleResponse, handleError } from "/opt/nodejs/helper.mjs";
+import { errorHandler } from "/opt/nodejs/helper.mjs";
 
 export const handler = async (event) => {
   console.log("🔥 Event received:", event);
@@ -25,15 +24,7 @@ export const handler = async (event) => {
         return fetchImageSets();
       case "FETCH_IMAGE_SET":
         return fetchImageSet(pathParameters.id);
-      case "FETCH_PRODUCT_OPTIONS":
-        const { after, limit } = event.queryStringParameters || {};
 
-        const result = await fetchProducts(
-          after,
-          limit ? parseInt(limit) : 10
-        );
-
-        return handleResponse(200, result);
       case "IS_PRODUCT_CUSTOMIZED":
 
       case "UPDATE_IMAGE_SET":
@@ -47,6 +38,6 @@ export const handler = async (event) => {
     }
   } catch (error) {
     console.error("❌ Error in personalizer-app-handler:", error);
-    return handleError(error);
+    return errorHandler(error);
   }
 };
