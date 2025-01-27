@@ -1,12 +1,12 @@
 import { fetchShopifyGql } from "/opt/nodejs/fetchShopifyGQL/index.mjs";
-import { buildResponse } from "/opt/nodejs/helper.mjs";
+import { buildResponse, errorHandler } from "/opt/nodejs/helper.mjs";
 
 export const getShopifyProduct = async (params) => {
   try {
     const query = params?.query || null;
 
     const searchQuery = `
-      query($query: String) {
+      query($query: String!) {
         products(first: 10, query: $query) {
           edges {
             node {
@@ -18,7 +18,7 @@ export const getShopifyProduct = async (params) => {
                 url
                 altText
               }
-              variants(first: 50) {
+              variants(first: 1) {
                 edges {
                   node {
                     id
@@ -32,6 +32,10 @@ export const getShopifyProduct = async (params) => {
               productType
               vendor
             }
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
           }
         }
       }
@@ -59,7 +63,7 @@ export const getShopifyProduct = async (params) => {
       data: response.data.data.products.edges.map((edge) => edge.node),
     });
   } catch (error) {
-    console.error("❌ Error in product search:", error);
-    return buildResponse(500, { message: error.message });
+    console.error("❌ Error in getShopifyProduct:", error);
+    return errorHandler(error);
   }
 };

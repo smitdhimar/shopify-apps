@@ -27,6 +27,11 @@ import {
 export const handler = async (event) => {
   console.log("🔥 Event received:", event);
 
+  // Handle OPTIONS requests for CORS
+  if (event.httpMethod === "OPTIONS") {
+    return buildResponse(200, {});
+  }
+
   const {
     resource,
     httpMethod,

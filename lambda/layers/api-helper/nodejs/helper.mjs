@@ -6,14 +6,22 @@ export const getHeaders = (authConfig, contentType = "application/json") => {
   };
 };
 
-export const errorHandler = (error, functionName) => {
-  console.error(`❌ Error in ${functionName}:`, error.message);
-  console.error(error);
-};
+export const errorHandler = (error) =>
+  buildResponse(500, {
+    message: error.message || "Internal Server Error",
+    error: error.toString(),
+  });
 
 export const buildResponse = (statusCode, body) => ({
   statusCode,
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+    "Access-Control-Allow-Headers":
+      "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Requested-With",
+    "Access-Control-Expose-Headers": "*",
+  },
   body: JSON.stringify(body),
 });
 

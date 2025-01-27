@@ -1,11 +1,12 @@
 resource "aws_apigatewayv2_api" "http_api" {
-  name          = "app-middleware"
+  name          = "http-api"
   protocol_type = "HTTP"
+
   cors_configuration {
-    allow_origins  = ["*"]
-    allow_methods  = ["*"]
-    allow_headers  = ["Content-Type", "Authorization", "X-Amz-Date", "X-Api-Key", "X-Amz-Security-Token"]
-    expose_headers = ["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key", "X-Amz-Security-Token"]
+    allow_headers  = ["*"]
+    allow_methods  = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allow_origins  = ["*"] # In production, specify your actual origins
+    expose_headers = ["*"]
     max_age        = 3600
   }
 }

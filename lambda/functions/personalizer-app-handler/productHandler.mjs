@@ -17,8 +17,10 @@ const tableName = process.env.PRODUCT_TABLE_NAME;
 
 // return id
 export const createProduct = async (body) => {
-  body.id = uuidv4();
   console.log("🔥 body", body);
+  if (!body.id) {
+    body.id = uuidv4();
+  }
   try {
     const command = new PutCommand({
       TableName: tableName,
