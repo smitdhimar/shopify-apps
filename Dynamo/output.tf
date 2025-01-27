@@ -5,6 +5,9 @@ output "backend_role_arn" {
 output "personalizer_product_table_name" {
   value = aws_dynamodb_table.personalizer_products.name
 }
+output "personalizer_product_config_table" {
+  value = aws_dynamodb_table.product_config_table.name
+}
 
 
 output "aws_region" {

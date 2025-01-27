@@ -47,10 +47,69 @@ resource "aws_apigatewayv2_route" "get_shopify_products_route" {
   target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
 }
 
-
 # POST /personalizer/product Route
 resource "aws_apigatewayv2_route" "create_product_route" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "POST /personalizer/product"
   target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
 }
+
+# GET /personalizer/product/{id} Route
+resource "aws_apigatewayv2_route" "get_product_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /personalizer/product/{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}
+
+# PUT /personalizer/product/{id} Route
+resource "aws_apigatewayv2_route" "update_product_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "PUT /personalizer/product/{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}
+
+# GET /personalizer/products Route
+resource "aws_apigatewayv2_route" "get_all_products_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /personalizer/products"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}
+
+# DELETE /personalizer/product/{id} Route
+resource "aws_apigatewayv2_route" "delete_product_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "DELETE /personalizer/product/{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}
+
+# Product Config Routes
+resource "aws_apigatewayv2_route" "create_product_config_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /personalizer/product-config"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "get_product_config_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /personalizer/product-config/{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "get_all_product_configs_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /personalizer/product-configs"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "update_product_config_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "PUT /personalizer/product-config/{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "delete_product_config_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "DELETE /personalizer/product-config/{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}
+

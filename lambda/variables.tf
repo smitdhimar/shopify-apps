@@ -54,3 +54,8 @@ variable "personalizer_product_table" {
   description = "Personalizer product table"
   type        = string
 }
+
+variable "personalizer_product_config_table" {
+  description = "Personalizer product config table"
+  type        = string
+}

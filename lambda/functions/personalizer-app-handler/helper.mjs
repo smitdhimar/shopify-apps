@@ -12,9 +12,27 @@ export const getPathAction = (path, httpMethod) => {
   if (path === "/personalizer/image-set/{id}" && httpMethod === "DELETE")
     return "DELETE_IMAGE_SET";
   if (path === "/personalizer/shopify-products" && httpMethod === "GET")
-      return "GET_SHOPIFY_PRODUCT";
-    if (path === "/personalizer/product" && httpMethod === "POST")
-      return "CREATE_PRODUCT";
+    return "GET_SHOPIFY_PRODUCT";
+  if (path === "/personalizer/product" && httpMethod === "POST")
+    return "CREATE_PRODUCT";
+  if (path === "/personalizer/product/{id}" && httpMethod === "GET")
+    return "GET_PRODUCT";
+  if (path === "/personalizer/product/{id}" && httpMethod === "PUT")
+    return "UPDATE_PRODUCT";
+  if (path === "/personalizer/products" && httpMethod === "GET")
+    return "GET_ALL_PRODUCTS";
+  if (path === "/personalizer/product/{id}" && httpMethod === "DELETE")
+    return "DELETE_PRODUCT";
+  if (path === "/personalizer/product-config" && httpMethod === "POST")
+    return "CREATE_PRODUCT_CONFIG";
+  if (path === "/personalizer/product-config/{id}" && httpMethod === "GET")
+    return "GET_PRODUCT_CONFIG";
+  if (path === "/personalizer/product-configs" && httpMethod === "GET")
+    return "GET_ALL_PRODUCT_CONFIGS";
+  if (path === "/personalizer/product-config/{id}" && httpMethod === "PUT")
+    return "UPDATE_PRODUCT_CONFIG";
+  if (path === "/personalizer/product-config/{id}" && httpMethod === "DELETE")
+    return "DELETE_PRODUCT_CONFIG";
 
   return "UNKNOWN";
 };

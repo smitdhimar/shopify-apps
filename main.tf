@@ -7,18 +7,19 @@ module "api_gateway" {
 }
 
 module "lambda" {
-  source                     = "./lambda"
-  fera_token                 = var.fera_token
-  fera_baseurl               = var.fera_baseurl
-  threshold                  = var.threshold
-  search_x_bearer_token      = var.search_x_bearer_token
-  search_x_client_token      = var.search_x_client_token
-  search_x_datasource_token  = var.search_x_datasource_token
-  image_set_table_name       = var.image_set_table_name
-  backend_role_arn           = module.dynamo.backend_role_arn
-  shopify_store_name         = var.shopify_store_name
-  shopify_admin_token        = var.shopify_admin_token
-  personalizer_product_table = module.dynamo.personalizer_product_table_name
+  source                            = "./lambda"
+  fera_token                        = var.fera_token
+  fera_baseurl                      = var.fera_baseurl
+  threshold                         = var.threshold
+  search_x_bearer_token             = var.search_x_bearer_token
+  search_x_client_token             = var.search_x_client_token
+  search_x_datasource_token         = var.search_x_datasource_token
+  image_set_table_name              = var.image_set_table_name
+  backend_role_arn                  = module.dynamo.backend_role_arn
+  shopify_store_name                = var.shopify_store_name
+  shopify_admin_token               = var.shopify_admin_token
+  personalizer_product_table        = module.dynamo.personalizer_product_table_name
+  personalizer_product_config_table = module.dynamo.personalizer_product_config_table
 }
 
 module "s3_buckets" {

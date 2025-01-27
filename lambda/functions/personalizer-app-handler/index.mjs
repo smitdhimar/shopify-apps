@@ -9,7 +9,20 @@ import {
 import { getShopifyProduct } from "./shopifyHandler.mjs";
 import { errorHandler } from "/opt/nodejs/helper.mjs";
 import { getPathAction } from "./helper.mjs";
-import { createProduct } from "./productHandler.mjs";
+import {
+  createProduct,
+  getProduct,
+  updateProduct,
+  getAllProducts,
+  deleteProduct,
+} from "./productHandler.mjs";
+import {
+  createProductConfig,
+  getProductConfig,
+  getAllProductConfigs,
+  updateProductConfig,
+  deleteProductConfig,
+} from "./productConfigHandler.mjs";
 
 export const handler = async (event) => {
   console.log("🔥 Event received:", event);
@@ -43,6 +56,24 @@ export const handler = async (event) => {
         return getShopifyProduct(queryStringParameters);
       case "CREATE_PRODUCT":
         return createProduct(body);
+      case "GET_PRODUCT":
+        return getProduct(pathParameters.id);
+      case "UPDATE_PRODUCT":
+        return updateProduct(pathParameters.id, body);
+      case "GET_ALL_PRODUCTS":
+        return getAllProducts();
+      case "DELETE_PRODUCT":
+        return deleteProduct(pathParameters.id);
+      case "CREATE_PRODUCT_CONFIG":
+        return createProductConfig(body);
+      case "GET_PRODUCT_CONFIG":
+        return getProductConfig(pathParameters.id);
+      case "GET_ALL_PRODUCT_CONFIGS":
+        return getAllProductConfigs();
+      case "UPDATE_PRODUCT_CONFIG":
+        return updateProductConfig(pathParameters.id, body);
+      case "DELETE_PRODUCT_CONFIG":
+        return deleteProductConfig(pathParameters.id);
       default:
         return buildResponse(404, { message: "❌ Resource Not Found" });
     }

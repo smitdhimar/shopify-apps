@@ -173,10 +173,11 @@ resource "aws_lambda_function" "personalizer-app-handler" {
   }
   environment {
     variables = {
-      IMAGE_SET_TABLE_NAME = var.image_set_table_name
-      SHOPIFY_STORE_NAME   = var.shopify_store_name
-      SHOPIFY_ADMIN_TOKEN  = var.shopify_admin_token
-      PRODUCT_TABLE_NAME   = var.personalizer_product_table
+      IMAGE_SET_TABLE_NAME      = var.image_set_table_name
+      SHOPIFY_STORE_NAME        = var.shopify_store_name
+      SHOPIFY_ADMIN_TOKEN       = var.shopify_admin_token
+      PRODUCT_TABLE_NAME        = var.personalizer_product_table
+      PRODUCT_CONFIG_TABLE_NAME = var.personalizer_product_config_table
     }
   }
 }

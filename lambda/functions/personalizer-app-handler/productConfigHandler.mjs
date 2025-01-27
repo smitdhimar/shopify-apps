@@ -10,30 +10,30 @@ import {
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 
-const client = new DynamoDBClient({ region: "ap-south-1" });
+const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 
-const tableName = process.env.PRODUCT_TABLE_NAME;
+const tableName = process.env.PRODUCT_CONFIG_TABLE_NAME;
 
-// return id
-export const createProduct = async (body) => {
+export const createProductConfig = async (body) => {
   body.id = uuidv4();
-  console.log("🔥 body", body);
   try {
     const command = new PutCommand({
       TableName: tableName,
       Item: body,
     });
-    const result = await docClient.send(command);
-    console.log("🔥 result", result);
-    return buildResponse(200, { message: "Product Created", id: body.id });
+    await docClient.send(command);
+    return buildResponse(200, {
+      message: "Product Config Created",
+      id: body.id,
+    });
   } catch (error) {
-    console.error("❌ Error in createProduct:", error);
+    console.error("❌ Error in createProductConfig:", error);
     return buildResponse(500, { message: error.message });
   }
 };
 
-export const getProduct = async (id) => {
+export const getProductConfig = async (id) => {
   try {
     const command = new GetCommand({
       TableName: tableName,
@@ -42,20 +42,42 @@ export const getProduct = async (id) => {
     const result = await docClient.send(command);
 
     if (!result.Item) {
-      return buildResponse(404, { message: "Product not found" });
+      return buildResponse(404, { message: "Product Config not found" });
     }
 
     return buildResponse(200, {
-      message: "Product Retrieved",
+      message: "Product Config Retrieved",
       data: result.Item,
     });
   } catch (error) {
-    console.error("❌ Error in getProduct:", error);
+    console.error("❌ Error in getProductConfig:", error);
     return buildResponse(500, { message: error.message });
   }
 };
 
-export const updateProduct = async (id, body) => {
+export const getAllProductConfigs = async () => {
+  try {
+    const command = new ScanCommand({
+      TableName: tableName,
+    });
+
+    const result = await docClient.send(command);
+
+    if (!result.Items || result.Items.length === 0) {
+      return buildResponse(200, { message: "No product configs found" });
+    }
+
+    return buildResponse(200, {
+      message: "Product Configs Retrieved",
+      data: result.Items,
+    });
+  } catch (error) {
+    console.error("❌ Error in getAllProductConfigs:", error);
+    return buildResponse(500, { message: error.message });
+  }
+};
+
+export const updateProductConfig = async (id, body) => {
   try {
     const updateExpression = Object.keys(body)
       .map((key) => `#${key} = :${key}`)
@@ -82,38 +104,16 @@ export const updateProduct = async (id, body) => {
 
     const result = await docClient.send(command);
     return buildResponse(200, {
-      message: "Product Updated",
+      message: "Product Config Updated",
       data: result.Attributes,
     });
   } catch (error) {
-    console.error("❌ Error in updateProduct:", error);
+    console.error("❌ Error in updateProductConfig:", error);
     return buildResponse(500, { message: error.message });
   }
 };
 
-export const getAllProducts = async () => {
-  try {
-    const command = new ScanCommand({
-      TableName: tableName,
-    });
-
-    const result = await docClient.send(command);
-
-    if (!result.Items || result.Items.length === 0) {
-      return buildResponse(200, { message: "No products found" });
-    }
-
-    return buildResponse(200, {
-      message: "Products Retrieved",
-      data: result.Items,
-    });
-  } catch (error) {
-    console.error("❌ Error in getAllProducts:", error);
-    return buildResponse(500, { message: error.message });
-  }
-};
-
-export const deleteProduct = async (id) => {
+export const deleteProductConfig = async (id) => {
   try {
     const command = new DeleteCommand({
       TableName: tableName,
@@ -124,15 +124,15 @@ export const deleteProduct = async (id) => {
     const result = await docClient.send(command);
 
     if (!result.Attributes) {
-      return buildResponse(404, { message: "Product not found" });
+      return buildResponse(404, { message: "Product Config not found" });
     }
 
     return buildResponse(200, {
-      message: "Product Deleted",
+      message: "Product Config Deleted",
       data: result.Attributes,
     });
   } catch (error) {
-    console.error("❌ Error in deleteProduct:", error);
+    console.error("❌ Error in deleteProductConfig:", error);
     return buildResponse(500, { message: error.message });
   }
 };

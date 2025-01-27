@@ -90,6 +90,25 @@ resource "aws_dynamodb_table" "personalizer_products" {
     Environment = "Developement"
   }
 }
+
+# Product Config Table
+resource "aws_dynamodb_table" "product_config_table" {
+  name         = "personalizer-product-config-table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+  attribute {
+    name = "id"
+    type = "S"
+  }
+  tags = {
+    Environment = "Development"
+  }
+}
+
+output "product_config_table_name" {
+  value = aws_dynamodb_table.product_config_table.name
+}
+
 # --------------------------------
 # Policy attachment
 # --------------------------------  
