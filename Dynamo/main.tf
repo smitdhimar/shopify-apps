@@ -18,7 +18,7 @@ resource "aws_iam_policy" "dynamodb_access" {
           "dynamodb:PutItem",
           "dynamodb:GetItem",
           "dynamodb:UpdateItem",
-          "dynamodb:DeleteItem",  
+          "dynamodb:DeleteItem",
           "dynamodb:Scan"
         ]
         Resource = [
