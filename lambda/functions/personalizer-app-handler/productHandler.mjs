@@ -9,6 +9,7 @@ import {
   ScanCommand,
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { fetchShopifyGql } from "/opt/nodejs/fetchShopifyGQL/index.mjs";
 
 const client = new DynamoDBClient({ region: "ap-south-1" });
 const docClient = DynamoDBDocumentClient.from(client);

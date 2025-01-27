@@ -16,6 +16,6 @@ cello-apply:
 	terraform fmt -recursive
 	terraform apply -var-file=${TFVARS_FILE} --auto-approve
 
-plan-apply:
+cello-plan-apply:
 	make cello-plan
 	make cello-apply
