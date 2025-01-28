@@ -22,6 +22,7 @@ import {
   getAllProductConfigs,
   updateProductConfig,
   deleteProductConfig,
+  getProductByProductId,
 } from "./productConfigHandler.mjs";
 
 export const handler = async (event) => {
@@ -57,6 +58,8 @@ export const handler = async (event) => {
         return updateImageSet(body, pathParameters.id);
       case "DELETE_IMAGE_SET":
         return deleteImageSet(pathParameters.id);
+      case "CHECK_IF_PRODUCT_CUSTOMIZED":
+        return getProductByProductId(pathParameters.id);
       case "GET_SHOPIFY_PRODUCT":
         return getShopifyProduct(queryStringParameters);
       case "CREATE_PRODUCT":

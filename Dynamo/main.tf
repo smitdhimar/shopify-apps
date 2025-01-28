@@ -19,7 +19,8 @@ resource "aws_iam_policy" "dynamodb_access" {
           "dynamodb:GetItem",
           "dynamodb:UpdateItem",
           "dynamodb:DeleteItem",
-          "dynamodb:Scan"
+          "dynamodb:Scan",
+          "dynamodb:Query"
         ]
         Resource = [
           "arn:aws:logs:*:*:*",
@@ -94,11 +95,19 @@ resource "aws_dynamodb_table" "personalizer_products" {
 resource "aws_dynamodb_table" "product_config_table" {
   name         = "personalizer-product-config-table"
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
+  hash_key     = "productId"
+  range_key    = "id"
+
+  attribute {
+    name = "productId"
+    type = "S"
+  }
+
   attribute {
     name = "id"
     type = "S"
   }
+
   tags = {
     Environment = "Development"
   }

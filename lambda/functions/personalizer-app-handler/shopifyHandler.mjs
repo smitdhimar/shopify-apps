@@ -18,33 +18,23 @@ export const getShopifyProduct = async (params) => {
                 url
                 altText
               }
-              images(last: 250) {
+              images(first: 250) {
                 edges {
                   node {
-                    id
                     url
-                    altText
                   }
                 }
               }
               variants(first: 50) {
                 edges {
                   node {
-                    id
                     title
-                    price
-                    sku
                     image {
-                      id
                       url
-                      altText
                     }
                   }
                 }
               }
-              tags
-              productType
-              vendor
             }
           }
         }
