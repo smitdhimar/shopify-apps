@@ -28,8 +28,10 @@ export const getShopifyProduct = async (params) => {
               variants(first: 50) {
                 edges {
                   node {
+                    id
                     title
                     image {
+                      id
                       url
                     }
                   }
@@ -60,7 +62,10 @@ export const getShopifyProduct = async (params) => {
 
     return buildResponse(200, {
       message: "Products Fetched",
-      data: response.data.data.products.edges.map((edge) => edge.node),
+      data: response.data.data.products.edges.map((edge) => ({
+        ...edge.node,
+        variants: edge.node.variants.edges.map((variant) => variant.node),
+      })),
     });
   } catch (error) {
     console.error("❌ Error in product search:", error);
