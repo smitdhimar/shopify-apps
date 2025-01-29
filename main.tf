@@ -20,6 +20,7 @@ module "lambda" {
   shopify_admin_token               = var.shopify_admin_token
   personalizer_product_table        = module.dynamo.personalizer_product_table_name
   personalizer_product_config_table = module.dynamo.personalizer_product_config_table
+  personalized_orders_table         = module.dynamo.personalized_orders_table_name
 }
 
 module "s3_buckets" {

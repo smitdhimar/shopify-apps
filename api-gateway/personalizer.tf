@@ -113,3 +113,10 @@ resource "aws_apigatewayv2_route" "delete_product_config_route" {
   target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
 }
 
+# POST /personalizer/personalize-order Route
+resource "aws_apigatewayv2_route" "check_order_personalization_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /personalizer/personalize-order"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_image_set_lambda_integration.id}"
+}
+

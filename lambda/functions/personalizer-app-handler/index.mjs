@@ -23,6 +23,7 @@ import {
   updateProductConfig,
   deleteProductConfig,
 } from "./productConfigHandler.mjs";
+import { checkOrderPersonalization } from "./orderHandler.mjs";
 
 export const handler = async (event) => {
   console.log("🔥 Event received:", event);
@@ -79,6 +80,10 @@ export const handler = async (event) => {
         return updateProductConfig(pathParameters.id, body);
       case "DELETE_PRODUCT_CONFIG":
         return deleteProductConfig(pathParameters.id);
+      case "CHECK_ORDER_PERSONALIZATION":
+      
+
+        return checkOrderPersonalization(body);
       default:
         return buildResponse(404, { message: "❌ Resource Not Found" });
     }

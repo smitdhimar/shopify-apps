@@ -19,6 +19,7 @@ resource "aws_iam_policy" "dynamodb_access" {
           "dynamodb:GetItem",
           "dynamodb:UpdateItem",
           "dynamodb:DeleteItem",
+          "dynamodb:BatchWriteItem",
           "dynamodb:Scan"
         ]
         Resource = [
@@ -106,6 +107,32 @@ resource "aws_dynamodb_table" "product_config_table" {
 
 output "product_config_table_name" {
   value = aws_dynamodb_table.product_config_table.name
+}
+
+# Personalized Orders Table
+resource "aws_dynamodb_table" "personalized_orders" {
+  name         = "personalizer-order-table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "orderId"
+  range_key    = "id" # Using line item ID as sort key
+
+  attribute {
+    name = "orderId"
+    type = "S"
+  }
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  tags = {
+    Environment = "Development"
+  }
+}
+
+output "personalized_orders_table_name" {
+  value = aws_dynamodb_table.personalized_orders.name
 }
 
 # --------------------------------
