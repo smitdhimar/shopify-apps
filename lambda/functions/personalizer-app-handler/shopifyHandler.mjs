@@ -18,12 +18,10 @@ export const getShopifyProduct = async (params) => {
                 url
                 altText
               }
-              images(last: 250) {
+              images(first: 250) {
                 edges {
                   node {
-                    id
                     url
-                    altText
                   }
                 }
               }
@@ -32,19 +30,13 @@ export const getShopifyProduct = async (params) => {
                   node {
                     id
                     title
-                    price
-                    sku
                     image {
                       id
                       url
-                      altText
                     }
                   }
                 }
               }
-              tags
-              productType
-              vendor
             }
           }
         }
@@ -70,7 +62,10 @@ export const getShopifyProduct = async (params) => {
 
     return buildResponse(200, {
       message: "Products Fetched",
-      data: response.data.data.products.edges.map((edge) => edge.node),
+      data: response.data.data.products.edges.map((edge) => ({
+        ...edge.node,
+        variants: edge.node.variants.edges.map((variant) => variant.node),
+      })),
     });
   } catch (error) {
     console.error("❌ Error in product search:", error);

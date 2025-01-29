@@ -15,8 +15,34 @@ const docClient = DynamoDBDocumentClient.from(client);
 
 const tableName = process.env.PRODUCT_CONFIG_TABLE_NAME;
 
+export const getProductByProductId = async (productId) => {
+  try {
+    const command = new QueryCommand({
+      TableName: tableName,
+      KeyConditionExpression: "productId = :productId",
+      ExpressionAttributeValues: {
+        ":productId": productId,
+      },
+    });
+
+    const result = await docClient.send(command);
+
+    if (!result.Items || result.Items.length === 0) {
+      return buildResponse(404, { message: "No rows found for the provided productId" });
+    }
+
+    return buildResponse(200, {
+      message: "Rows retrieved successfully",
+      data: result.Items,
+    });
+  } catch (error) {
+    console.error("❌ Error in getProductByProductId:", error);
+    return buildResponse(500, { message: error.message });
+  }
+};
+
 export const createProductConfig = async (body) => {
-  body.id = uuidv4();
+
   try {
     const command = new PutCommand({
       TableName: tableName,
