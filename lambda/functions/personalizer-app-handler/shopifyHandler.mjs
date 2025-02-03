@@ -6,42 +6,48 @@ export const getShopifyProduct = async (params) => {
     const query = params?.query || null;
 
     const searchQuery = `
-      query($query: String) {
-        products(first: 10, query: $query) {
-          edges {
-            node {
+    query($query: String) {
+      products(first: 10, query: $query) {
+        edges {
+          node {
+            id
+            title
+            handle
+            featuredImage {
               id
-              title
-              handle
-              featuredImage {
-                id
-                url
-                altText
+              url
+              altText
+            }
+            images(first: 250) {
+              edges {
+                node {
+                  url
+                }
               }
-              images(first: 250) {
-                edges {
-                  node {
+            }
+            variants(first: 50) {
+              edges {
+                node {
+                  id
+                  title
+                  image {
+                    id
                     url
                   }
                 }
               }
-              variants(first: 50) {
-                edges {
-                  node {
-                    id
-                    title
-                    image {
-                      id
-                      url
-                    }
-                  }
-                }
-              }
+            }
+            options {
+              id
+              name
+              values
+              
             }
           }
         }
       }
-    `;
+    }
+  `;
 
     const variables = query ? { query: query } : {};
     const storeName = process.env.SHOPIFY_STORE_NAME;
