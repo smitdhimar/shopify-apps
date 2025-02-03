@@ -2,6 +2,7 @@ import { buildResponse } from "/opt/nodejs/helper.mjs";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
+  ScanCommand,
   BatchWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
 
@@ -105,3 +106,26 @@ export const checkOrderPersonalization = async (order) => {
     return buildResponse(500, { message: error.message });
   }
 };
+
+export const getOrders = async ()=>{
+  try {
+    const command = new ScanCommand({
+      TableName: tableName, // Replace with your actual table name
+    });
+
+    const result = await docClient.send(command);
+
+    // Check if Items exist
+    if (!result.Items || result.Items.length === 0) {
+      return buildResponse(200, { message: "No data found" });
+    }
+
+    return buildResponse(200, {
+      message: "Orders returned",
+      data: result.Items,
+    }); // Return the array of items
+  } catch (error) {
+    console.error("❌ Error in fetching orders:", error);
+    throw new Error("Failed to Orders");
+  }
+}

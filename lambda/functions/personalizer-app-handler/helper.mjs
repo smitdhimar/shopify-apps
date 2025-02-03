@@ -37,8 +37,10 @@ export const getPathAction = (path, httpMethod) => {
     return "CHANGE_PRODUCT_STATUS";
   if (path === "/personalizer/personalize-order" && httpMethod === "POST")
     return "CHECK_ORDER_PERSONALIZATION";
+  if (path === "/personalizer/orders" && httpMethod==="GET")
+    return "GET_ORDERS";
   if (path === '/personalizer/product-config/{id}' && httpMethod==="GET")
-    return "CHECK_IF_PRODUCT_CUSTOMIZED"
+    return "CHECK_IF_PRODUCT_CUSTOMIZED";
 
   return "UNKNOWN";
 };

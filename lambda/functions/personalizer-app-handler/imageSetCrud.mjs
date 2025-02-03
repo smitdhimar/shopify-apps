@@ -12,9 +12,9 @@ import {
 
 // Use AWS_REGION environment variable which is automatically set in Lambda
 const client = new DynamoDBClient({}); // Remove hardcoded region
-const docClient = DynamoDBDocumentClient.from(client);
+export const docClient = DynamoDBDocumentClient.from(client);
 
-const tableName = process.env.IMAGE_SET_TABLE_NAME;
+export const tableName = process.env.IMAGE_SET_TABLE_NAME;
 
 // return id
 export const createImageSet = async (body) => {

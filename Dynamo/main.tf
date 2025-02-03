@@ -20,7 +20,6 @@ resource "aws_iam_policy" "dynamodb_access" {
           "dynamodb:UpdateItem",
           "dynamodb:DeleteItem",
           "dynamodb:BatchWriteItem",
-          "dynamodb:Scan"
           "dynamodb:Scan",
           "dynamodb:Query"
         ]
@@ -155,6 +154,3 @@ resource "aws_iam_role_policy_attachment" "attach_dynamodb_policy" {
 
 # Get current AWS region
 data "aws_region" "current" {}
-
-
-
