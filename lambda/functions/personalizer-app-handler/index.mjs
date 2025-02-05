@@ -15,6 +15,7 @@ import {
   updateProduct,
   getAllProducts,
   deleteProduct,
+  changeProductStatus,
 } from "./productHandler.mjs";
 import {
   createProductConfig,
@@ -87,6 +88,9 @@ export const handler = async (event) => {
         return checkOrderPersonalization(body);
       case "GET_ORDERS":
         return getOrders();
+      case "CHANGE_PRODUCT_STATUS":
+        const { status } = JSON.parse(_body);
+        return changeProductStatus(pathParameters.id, status);
       default:
         return buildResponse(404, { message: "❌ Resource Not Found" });
     }

@@ -139,3 +139,132 @@ export const deleteProduct = async (id) => {
     return buildResponse(500, { message: error.message });
   }
 };
+
+export const changeProductStatus = async (id, status) => {
+  try {
+    // Validate status
+    if (!["active", "draft"].includes(status)) {
+      return buildResponse(400, {
+        message: "Invalid status. Must be either 'active' or 'draft'",
+      });
+    }
+
+    // First get the product to get the Shopify ID
+    const getCommand = new GetCommand({
+      TableName: tableName,
+      Key: { id },
+    });
+
+    const result = await docClient.send(getCommand);
+    if (!result.Item) {
+      return buildResponse(404, { message: "Product not found" });
+    }
+
+    // Update DynamoDB status
+    const updateCommand = new UpdateCommand({
+      TableName: tableName,
+      Key: { id },
+      UpdateExpression: "SET #status = :status, #updatedAt = :updatedAt",
+      ExpressionAttributeNames: {
+        "#status": "status",
+        "#updatedAt": "updatedAt",
+      },
+      ExpressionAttributeValues: {
+        ":status": status,
+        ":updatedAt": new Date().toISOString(),
+      },
+      ReturnValues: "ALL_NEW",
+    });
+
+    const updateResult = await docClient.send(updateCommand);
+
+    // Update Shopify product tags
+    const getTagsQuery = `
+      query($id: ID!) {
+        product(id: $id) {
+          id
+          tags
+        }
+      }
+    `;
+
+    const updateTagsMutation = `
+      mutation($input: ProductInput!) {
+        productUpdate(input: $input) {
+          product {
+            id
+            tags
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    // Get current tags
+    const {
+      data: {
+        data: { product },
+      },
+    } = await fetchShopifyGql(
+      process.env.SHOPIFY_STORE_NAME,
+      getTagsQuery,
+      process.env.SHOPIFY_ADMIN_TOKEN,
+      { id: `gid://shopify/Product/${id}` }
+    );
+
+    let currentTags = product.tags || [];
+    let newTags = [...currentTags];
+
+    if (status === "active") {
+      // Add personalized tag if not present
+      if (!currentTags.includes("personalized")) {
+        newTags.push("personalized");
+      }
+    } else {
+      // Remove personalized tag for draft status
+      newTags = currentTags.filter((tag) => tag !== "personalized");
+    }
+
+    // Only update if tags have changed
+    if (!arraysEqual(currentTags, newTags)) {
+      const updateResponse = await fetchShopifyGql(
+        process.env.SHOPIFY_STORE_NAME,
+        updateTagsMutation,
+        process.env.SHOPIFY_ADMIN_TOKEN,
+        {
+          input: {
+            id: `gid://shopify/Product/${id}`,
+            tags: newTags,
+          },
+        }
+      );
+
+      if (updateResponse.data.data.productUpdate.userErrors.length > 0) {
+        const error = updateResponse.data.data.productUpdate.userErrors[0];
+        throw new Error(`Shopify Error: ${error.message}`);
+      }
+    }
+
+    return buildResponse(200, {
+      message: "Product status updated successfully",
+      data: {
+        ...updateResult.Attributes,
+        shopifyTags: newTags,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error in changeProductStatus:", error);
+    return buildResponse(500, { message: error.message });
+  }
+};
+
+// Helper function to compare arrays
+const arraysEqual = (a, b) => {
+  if (a.length !== b.length) return false;
+  const sortedA = [...a].sort();
+  const sortedB = [...b].sort();
+  return sortedA.every((val, index) => val === sortedB[index]);
+};

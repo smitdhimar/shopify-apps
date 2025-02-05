@@ -25,8 +25,6 @@ export const getPathAction = (path, httpMethod) => {
     return "DELETE_PRODUCT";
   if (path === "/personalizer/product-config" && httpMethod === "POST")
     return "CREATE_PRODUCT_CONFIG";
-  // if (path === "/personalizer/product-config/{id}" && httpMethod === "GET")
-    // return "GET_PRODUCT_CONFIG";
   if (path === "/personalizer/product-configs" && httpMethod === "GET")
     return "GET_ALL_PRODUCT_CONFIGS";
   if (path === "/personalizer/product-config/{id}" && httpMethod === "PUT")
@@ -37,9 +35,9 @@ export const getPathAction = (path, httpMethod) => {
     return "CHANGE_PRODUCT_STATUS";
   if (path === "/personalizer/personalize-order" && httpMethod === "POST")
     return "CHECK_ORDER_PERSONALIZATION";
-  if (path === "/personalizer/orders" && httpMethod==="GET")
+  if (path === "/personalizer/orders" && httpMethod === "GET")
     return "GET_ORDERS";
-  if (path === '/personalizer/product-config/{id}' && httpMethod==="GET")
+  if (path === "/personalizer/product-config/{id}" && httpMethod === "GET")
     return "CHECK_IF_PRODUCT_CUSTOMIZED";
 
   return "UNKNOWN";
