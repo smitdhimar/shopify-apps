@@ -27,6 +27,17 @@ export const createProduct = async (body) => {
       TableName: tableName,
       Item: body,
     });
+
+    //check if product already exists
+    const getCommand = new GetCommand({
+      TableName: tableName,
+      Key: { id: body.id },
+    });
+    const product = await docClient.send(getCommand);
+    if(product.Item){
+      return buildResponse(400, { message: "Product already exists" });
+    }
+
     const result = await docClient.send(command);
     console.log("🔥 result", result);
     return buildResponse(200, { message: "Product Created", id: body.id });
