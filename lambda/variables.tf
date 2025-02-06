@@ -64,3 +64,8 @@ variable "personalized_orders_table" {
   description = "Personalized orders table name"
   type        = string
 }
+
+variable "image_bucket" {
+  description = "Name of the S3 bucket for images"
+  type        = string
+}

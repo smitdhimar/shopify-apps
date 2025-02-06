@@ -21,12 +21,15 @@ resource "aws_iam_policy" "dynamodb_access" {
           "dynamodb:DeleteItem",
           "dynamodb:BatchWriteItem",
           "dynamodb:Scan",
-          "dynamodb:Query"
+          "dynamodb:Query",
+          "s3:PutObject",
+          "s3:GetObject"
         ]
         Resource = [
           "arn:aws:logs:*:*:*",
           "arn:aws:lambda:*:*:layer:api-helper:*",
-          "arn:aws:dynamodb:*:*:table/*"
+          "arn:aws:dynamodb:*:*:table/*",
+          "arn:aws:s3:::${var.image_bucket}/*"
         ]
       }
     ]

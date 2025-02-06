@@ -21,6 +21,7 @@ module "lambda" {
   personalizer_product_table        = module.dynamo.personalizer_product_table_name
   personalizer_product_config_table = module.dynamo.personalizer_product_config_table
   personalized_orders_table         = module.dynamo.personalized_orders_table_name
+  image_bucket                      = var.image_bucket
 }
 
 module "s3_buckets" {
@@ -33,6 +34,7 @@ module "cloudfronts" {
   source                = "./cloudfronts"
   s3_bucket_domain_name = module.s3_buckets.bucket_domain_name
   s3_bucket_id          = module.s3_buckets.bucket_id
+  depends_on            = [module.s3_buckets]
 }
 
 module "amplify" {
@@ -48,4 +50,5 @@ module "cognitoPoolIdentity" {
 module "dynamo" {
   source               = "./dynamo"
   image_set_table_name = var.image_set_table_name
+  image_bucket         = var.image_bucket
 }

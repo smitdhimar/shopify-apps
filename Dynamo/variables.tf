@@ -3,3 +3,8 @@ variable "image_set_table_name" {
   type        = string
 }
 
+variable "image_bucket" {
+  description = "Name of the S3 bucket for images"
+  type        = string
+}
+

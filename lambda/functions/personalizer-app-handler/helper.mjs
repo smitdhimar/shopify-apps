@@ -39,6 +39,8 @@ export const getPathAction = (path, httpMethod) => {
     return "GET_ORDERS";
   if (path === "/personalizer/product-config/{id}" && httpMethod === "GET")
     return "CHECK_IF_PRODUCT_CUSTOMIZED";
+  if (path === "/personalizer/generate-upload-url" && httpMethod === "POST")
+    return "GENERATE_PRESIGNED_URL";
 
   return "UNKNOWN";
 };

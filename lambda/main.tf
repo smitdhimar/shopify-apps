@@ -180,6 +180,7 @@ resource "aws_lambda_function" "personalizer-app-handler" {
       PRODUCT_CONFIG_TABLE_NAME = var.personalizer_product_config_table
       CORS_ALLOWED_ORIGINS      = "*" # In production, specify your actual origins
       PERSONALIZED_ORDERS_TABLE = var.personalized_orders_table
+      IMAGE_BUCKET              = var.image_bucket
     }
   }
 }

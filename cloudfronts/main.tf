@@ -1,6 +1,6 @@
-# Create Origin Access Identity for CloudFront
+# Create Origin Access Identity
 resource "aws_cloudfront_origin_access_identity" "oai" {
-  comment = "OAI for Image CDN"
+  comment = "OAI for image bucket"
 }
 
 # Create CloudFront distribution
@@ -8,7 +8,7 @@ resource "aws_cloudfront_distribution" "image_cdn" {
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
-  price_class         = "PriceClass_100"
+  comment             = "CDN for image bucket"
 
   origin {
     domain_name = var.s3_bucket_domain_name
@@ -29,7 +29,6 @@ resource "aws_cloudfront_distribution" "image_cdn" {
       cookies {
         forward = "none"
       }
-      headers = ["Origin", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
     }
 
     viewer_protocol_policy = "redirect-to-https"
@@ -37,6 +36,8 @@ resource "aws_cloudfront_distribution" "image_cdn" {
     default_ttl            = 3600
     max_ttl                = 86400
   }
+
+  price_class = "PriceClass_200"
 
   restrictions {
     geo_restriction {
@@ -48,7 +49,5 @@ resource "aws_cloudfront_distribution" "image_cdn" {
     cloudfront_default_certificate = true
   }
 
-  tags = {
-    Environment = "production"
-  }
+  wait_for_deployment = false
 }

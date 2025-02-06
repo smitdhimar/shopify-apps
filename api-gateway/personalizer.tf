@@ -133,3 +133,10 @@ resource "aws_apigatewayv2_route" "update_product_status_route" {
   route_key = "PUT /personalizer/product/{id}/status"
   target    = "integrations/${aws_apigatewayv2_integration.personalizer_lambda_integration.id}"
 }
+
+# POST /personalizer/generate-upload-url Route
+resource "aws_apigatewayv2_route" "generate_upload_url_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /personalizer/generate-upload-url"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_lambda_integration.id}"
+}

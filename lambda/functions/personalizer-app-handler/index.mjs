@@ -26,6 +26,7 @@ import {
   getProductByProductId,
 } from "./productConfigHandler.mjs";
 import { checkOrderPersonalization, getOrders } from "./orderHandler.mjs";
+import { generatePresignedUrl } from "./s3Handler.mjs";
 
 export const handler = async (event) => {
   console.log("🔥 Event received:", event);
@@ -91,6 +92,9 @@ export const handler = async (event) => {
       case "CHANGE_PRODUCT_STATUS":
         const { status } = JSON.parse(_body);
         return changeProductStatus(pathParameters.id, status);
+      case "GENERATE_PRESIGNED_URL":
+        const { fileName, contentType } = body;
+        return generatePresignedUrl(fileName, contentType);
       default:
         return buildResponse(404, { message: "❌ Resource Not Found" });
     }

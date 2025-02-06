@@ -25,8 +25,7 @@ export const checkOrderPersonalization = async (order) => {
       const lineItems = order.line_items.filter((item) =>
         item.properties.some(
           (property) =>
-            property.name === "engraving" &&
-            property.value === "Happy Birthday!"
+            property.name === "personalized" && property.value === "true"
         )
       );
 
@@ -107,7 +106,7 @@ export const checkOrderPersonalization = async (order) => {
   }
 };
 
-export const getOrders = async ()=>{
+export const getOrders = async () => {
   try {
     const command = new ScanCommand({
       TableName: tableName, // Replace with your actual table name
@@ -128,4 +127,4 @@ export const getOrders = async ()=>{
     console.error("❌ Error in fetching orders:", error);
     throw new Error("Failed to Orders");
   }
-}
+};
