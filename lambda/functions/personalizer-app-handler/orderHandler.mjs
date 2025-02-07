@@ -31,14 +31,22 @@ export const checkOrderPersonalization = async (order) => {
 
       const personalizedOrderItems = lineItems.map((item) => ({
         orderId: order.id.toString(),
+        createdAt: order.created_at,
+        status: order.status,
+        billingAddress: order?.billing_address,
+        shippingAddress: order?.shipping_address,
+        defaultAddress: order?.default_address,
         id: item.id.toString(),
         productId: item.product_id,
         variantId: item.variant_id,
         quantity: item.quantity,
         title: item.title,
         price: item.price,
+        currency: order.currency,
+        variantTitle: item.variant_title,
+        productName: item.name,
         totalPrice: item.total_price,
-        totalDiscount: item.total_discount,
+        customerDetails: order.customer,
         createdAt: new Date().toISOString(),
         properties: item.properties.reduce((acc, property) => {
           acc[property.name] = property.value;

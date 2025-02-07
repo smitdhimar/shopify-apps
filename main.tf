@@ -25,16 +25,14 @@ module "lambda" {
 }
 
 module "s3_buckets" {
-  source                           = "./s3-buckets"
-  cloudfront_oai_canonical_user_id = module.cloudfronts.cloudfront_oai_canonical_user_id
-  image_bucket                     = var.image_bucket
+  source       = "./s3-buckets"
+  image_bucket = var.image_bucket
 }
 
 module "cloudfronts" {
   source                = "./cloudfronts"
   s3_bucket_domain_name = module.s3_buckets.bucket_domain_name
   s3_bucket_id          = module.s3_buckets.bucket_id
-  depends_on            = [module.s3_buckets]
 }
 
 module "amplify" {

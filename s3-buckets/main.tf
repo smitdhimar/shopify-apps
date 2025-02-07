@@ -1,6 +1,5 @@
 locals {
   s3_buckets = [var.image_bucket]
-
 }
 
 # s3 bucket
@@ -16,7 +15,7 @@ resource "aws_s3_bucket_ownership_controls" "image_bucket_ownership" {
   }
 }
 
-# Set private ACL
+# Set public ACL
 resource "aws_s3_bucket_acl" "image_bucket_acl" {
   depends_on = [
     aws_s3_bucket_ownership_controls.image_bucket_ownership,
@@ -34,8 +33,6 @@ resource "aws_s3_bucket_versioning" "image_bucket_versioning" {
     status = "Enabled"
   }
 }
-
-
 
 # Adjust block public access settings
 resource "aws_s3_bucket_public_access_block" "image_bucket_access" {
@@ -77,5 +74,4 @@ resource "aws_s3_bucket_cors_configuration" "image_bucket_cors" {
     expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }
-
 }
