@@ -16,7 +16,7 @@ export const checkOrderPersonalization = async (order) => {
     const isPersonalized = order.line_items.some((item) =>
       item.properties.some(
         (property) =>
-          property.name === "engraving" && property.value === "Happy Birthday!"
+          property.name === "personalized" && property.value === "true"
       )
     );
 
