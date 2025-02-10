@@ -16,6 +16,70 @@ const docClient = DynamoDBDocumentClient.from(client);
 
 const tableName = process.env.PRODUCT_TABLE_NAME;
 
+// get current tags
+const getTags = async (id) => {
+  try {
+    // Get current tags
+    const getTagsQuery = `
+      query($id: ID!) {
+        product(id: $id) {
+          id
+          tags
+        }
+      }
+    `;
+    const {
+      data: {
+        data: { product },
+      },
+    } = await fetchShopifyGql(
+      process.env.SHOPIFY_STORE_NAME,
+      getTagsQuery,
+      process.env.SHOPIFY_ADMIN_TOKEN,
+      { id: `gid://shopify/Product/${id}` }
+    );
+    return product;
+  } catch (error) {
+    console.error("❌ Error in getTags :", error);
+    return buildResponse(500, { message: error.message });
+  }
+};
+
+//update tags
+const updateTags = async (id, newTags) => {
+  try {
+    const updateTagsMutation = `
+      mutation($input: ProductInput!) {
+        productUpdate(input: $input) {
+          product {
+            id
+            tags
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+    const updateResponse = await fetchShopifyGql(
+      process.env.SHOPIFY_STORE_NAME,
+      updateTagsMutation,
+      process.env.SHOPIFY_ADMIN_TOKEN,
+      {
+        input: {
+          id: `gid://shopify/Product/${id}`,
+          tags: newTags,
+        },
+      }
+    );
+
+    return updateResponse;
+  } catch (error) {
+    console.error("❌ Error in updateTags:", error);
+    return buildResponse(500, { message: error.message });
+  }
+};
 // return id
 export const createProduct = async (body) => {
   console.log("🔥 body", body);
@@ -34,7 +98,7 @@ export const createProduct = async (body) => {
       Key: { id: body.id },
     });
     const product = await docClient.send(getCommand);
-    if(product.Item){
+    if (product.Item) {
       return buildResponse(400, { message: "Product already exists" });
     }
 
@@ -141,6 +205,18 @@ export const deleteProduct = async (id) => {
       return buildResponse(404, { message: "Product not found" });
     }
 
+    const product = await getTags(id);
+    const currentTags = product.tags || [];
+    //remove the personalized tags
+    const newTags = currentTags.filter((tag) => tag !== "personalized");
+
+    // update the shopify tags with query
+    const tagsUpdateResponse = await updateTags(id, newTags);
+    if (tagsUpdateResponse.data.data.productUpdate.userErrors.length > 0) {
+      const error = tagsUpdateResponse.data.data.productUpdate.userErrors[0];
+      throw new Error(`Shopify Error: ${error.message}`);
+    }
+
     return buildResponse(200, {
       message: "Product Deleted",
       data: result.Attributes,
@@ -190,41 +266,8 @@ export const changeProductStatus = async (id, status) => {
     const updateResult = await docClient.send(updateCommand);
 
     // Update Shopify product tags
-    const getTagsQuery = `
-      query($id: ID!) {
-        product(id: $id) {
-          id
-          tags
-        }
-      }
-    `;
 
-    const updateTagsMutation = `
-      mutation($input: ProductInput!) {
-        productUpdate(input: $input) {
-          product {
-            id
-            tags
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }
-    `;
-
-    // Get current tags
-    const {
-      data: {
-        data: { product },
-      },
-    } = await fetchShopifyGql(
-      process.env.SHOPIFY_STORE_NAME,
-      getTagsQuery,
-      process.env.SHOPIFY_ADMIN_TOKEN,
-      { id: `gid://shopify/Product/${id}` }
-    );
+    const product = await getTags(id);
 
     let currentTags = product.tags || [];
     let newTags = [...currentTags];
@@ -241,17 +284,7 @@ export const changeProductStatus = async (id, status) => {
 
     // Only update if tags have changed
     if (!arraysEqual(currentTags, newTags)) {
-      const updateResponse = await fetchShopifyGql(
-        process.env.SHOPIFY_STORE_NAME,
-        updateTagsMutation,
-        process.env.SHOPIFY_ADMIN_TOKEN,
-        {
-          input: {
-            id: `gid://shopify/Product/${id}`,
-            tags: newTags,
-          },
-        }
-      );
+      const updateResponse = await updateTags(id, newTags);
 
       if (updateResponse.data.data.productUpdate.userErrors.length > 0) {
         const error = updateResponse.data.data.productUpdate.userErrors[0];
