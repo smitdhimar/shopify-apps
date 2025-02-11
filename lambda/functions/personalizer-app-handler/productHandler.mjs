@@ -208,7 +208,7 @@ export const deleteProduct = async (id) => {
     const product = await getTags(id);
     const currentTags = product.tags || [];
     //remove the personalized tags
-    const newTags = currentTags.filter((tag) => tag !== "personalized");
+    const newTags = currentTags.filter((tag) => tag !== "devx-personalized");
 
     // update the shopify tags with query
     const tagsUpdateResponse = await updateTags(id, newTags);
@@ -274,12 +274,12 @@ export const changeProductStatus = async (id, status) => {
 
     if (status === "active") {
       // Add personalized tag if not present
-      if (!currentTags.includes("personalized")) {
-        newTags.push("personalized");
+      if (!currentTags.includes("devx-personalized")) {
+        newTags.push("devx-personalized");
       }
     } else {
       // Remove personalized tag for draft status
-      newTags = currentTags.filter((tag) => tag !== "personalized");
+      newTags = currentTags.filter((tag) => tag !== "devx-personalized");
     }
 
     // Only update if tags have changed

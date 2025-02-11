@@ -16,7 +16,7 @@ export const checkOrderPersonalization = async (order) => {
     const isPersonalized = order.line_items.some((item) =>
       item.properties.some(
         (property) =>
-          property.name === "personalized" && property.value === "true"
+          property.name === "devx-personalized" && property.value === "true"
       )
     );
 
@@ -25,7 +25,7 @@ export const checkOrderPersonalization = async (order) => {
       const lineItems = order.line_items.filter((item) =>
         item.properties.some(
           (property) =>
-            property.name === "personalized" && property.value === "true"
+            property.name === "devx-personalized" && property.value === "true"
         )
       );
 
