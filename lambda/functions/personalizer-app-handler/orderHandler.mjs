@@ -114,25 +114,132 @@ export const checkOrderPersonalization = async (order) => {
   }
 };
 
-export const getOrders = async () => {
+export const getOrders = async (queryParams) => {
   try {
-    const command = new ScanCommand({
-      TableName: tableName, // Replace with your actual table name
-    });
+    console.log("🔥 Query Params received:", queryParams);
 
+    const {
+      startDate,
+      endDate,
+      searchTerm,
+      cursor,
+      pageSize = "20", // Default to 20 items
+    } = queryParams || {};
+
+    // Base scan parameters
+    const scanParams = {
+      TableName: tableName,
+      Limit: parseInt(pageSize),
+    };
+
+    let filterExpressions = [];
+    let expressionAttributeValues = {};
+    let expressionAttributeNames = {};
+
+    // Add cursor-based pagination
+    if (cursor && cursor !== "undefined" && cursor !== "null") {
+      try {
+        // Decode the cursor if it's base64
+        let decodedCursor;
+        try {
+          decodedCursor = Buffer.from(cursor, "base64").toString("utf-8");
+        } catch (e) {
+          console.error("❌ Base64 decode error:", e);
+          return buildResponse(400, { message: "Invalid cursor format" });
+        }
+
+        // Parse the JSON
+        try {
+          const parsedCursor = JSON.parse(decodedCursor);
+          if (parsedCursor && parsedCursor.orderId && parsedCursor.id) {
+            scanParams.ExclusiveStartKey = parsedCursor;
+          } else {
+            throw new Error("Invalid cursor structure");
+          }
+        } catch (e) {
+          console.error("❌ JSON parse error:", e);
+          return buildResponse(400, { message: "Invalid cursor data" });
+        }
+      } catch (error) {
+        console.error("❌ Cursor processing error:", error);
+        return buildResponse(400, {
+          message: "Invalid cursor provided",
+          error: error.message,
+        });
+      }
+    }
+
+    // Add date filter if dates are provided
+    if (startDate) {
+      filterExpressions.push("#createdAt >= :startDate");
+      expressionAttributeValues[":startDate"] = new Date(startDate).toISOString();
+      expressionAttributeNames["#createdAt"] = "createdAt";
+    }
+
+    if (endDate) {
+      filterExpressions.push("#createdAt <= :endDate");
+      expressionAttributeValues[":endDate"] = new Date(endDate).toISOString();
+      expressionAttributeNames["#createdAt"] = "createdAt";
+    }
+
+    // Add search filter if searchTerm is provided
+    if (searchTerm) {
+      filterExpressions.push(
+        "(contains(#email, :searchTerm) OR " +
+          "contains(#first_name, :searchTerm) OR " +
+          "contains(#last_name, :searchTerm))"
+      );
+      expressionAttributeValues[":searchTerm"] = searchTerm.toLowerCase();
+      expressionAttributeNames["#email"] = "customerDetails.email";
+      expressionAttributeNames["#first_name"] =
+        "customerDetails.firstName";
+      expressionAttributeNames["#last_name"] =
+        "customerDetails.lastName";
+    }
+
+    // Combine all filter expressions
+    if (filterExpressions.length > 0) {
+      scanParams.FilterExpression = filterExpressions.join(" AND ");
+      scanParams.ExpressionAttributeValues = expressionAttributeValues;
+      scanParams.ExpressionAttributeNames = expressionAttributeNames;
+    }
+
+    console.log("🔥 Scan Params:", JSON.stringify(scanParams, null, 2));
+
+    const command = new ScanCommand(scanParams);
     const result = await docClient.send(command);
+
+    console.log("🔥 DynamoDB Result:", JSON.stringify(result, null, 2));
 
     // Check if Items exist
     if (!result.Items || result.Items.length === 0) {
-      return buildResponse(200, { message: "No data found" });
+      return buildResponse(200, {
+        message: "No data found",
+        data: [],
+        pagination: {
+          nextCursor: null,
+          hasMore: false,
+        },
+      });
     }
+
+    // Create base64 cursor for next page
+    const nextCursor = result.LastEvaluatedKey
+      ? Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString("base64")
+      : null;
 
     return buildResponse(200, {
       message: "Orders returned",
       data: result.Items,
-    }); // Return the array of items
+      pagination: {
+        nextCursor,
+        hasMore: !!result.LastEvaluatedKey,
+        total: result.Items.length,
+        scannedCount: result.ScannedCount,
+      },
+    });
   } catch (error) {
     console.error("❌ Error in fetching orders:", error);
-    throw new Error("Failed to Orders");
+    return buildResponse(500, { message: error.message });
   }
 };

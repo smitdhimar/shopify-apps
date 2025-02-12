@@ -88,7 +88,7 @@ export const handler = async (event) => {
       case "CHECK_ORDER_PERSONALIZATION":
         return checkOrderPersonalization(body);
       case "GET_ORDERS":
-        return getOrders();
+        return getOrders(queryStringParameters);
       case "CHANGE_PRODUCT_STATUS":
         const { status } = JSON.parse(_body);
         return changeProductStatus(pathParameters.id, status);
