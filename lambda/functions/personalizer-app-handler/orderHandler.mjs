@@ -172,7 +172,9 @@ export const getOrders = async (queryParams) => {
     // Add date filter if dates are provided
     if (startDate) {
       filterExpressions.push("#createdAt >= :startDate");
-      expressionAttributeValues[":startDate"] = new Date(startDate).toISOString();
+      expressionAttributeValues[":startDate"] = new Date(
+        startDate
+      ).toISOString();
       expressionAttributeNames["#createdAt"] = "createdAt";
     }
 
@@ -184,17 +186,21 @@ export const getOrders = async (queryParams) => {
 
     // Add search filter if searchTerm is provided
     if (searchTerm) {
+      // Construct filter expressions for the search term using lowercase fields and orderId
       filterExpressions.push(
-        "(contains(#email, :searchTerm) OR " +
-          "contains(#first_name, :searchTerm) OR " +
-          "contains(#last_name, :searchTerm))"
+        "(contains(#customerEmailLower, :searchTerm) OR " +
+          "contains(#customerFirstNameLower, :searchTerm) OR " +
+          "contains(#customerLastNameLower, :searchTerm) OR " +
+          "contains(#orderId, :searchTerm))"
       );
-      expressionAttributeValues[":searchTerm"] = searchTerm.toLowerCase();
-      expressionAttributeNames["#email"] = "customerDetails.email";
-      expressionAttributeNames["#first_name"] =
-        "customerDetails.firstName";
-      expressionAttributeNames["#last_name"] =
-        "customerDetails.lastName";
+
+      expressionAttributeValues[":searchTerm"] = searchTerm;
+      expressionAttributeNames["#customerEmailLower"] = "customerDetails.email";
+      expressionAttributeNames["#customerFirstNameLower"] =
+        "customerDetails.first_name";
+      expressionAttributeNames["#customerLastNameLower"] =
+        "customerDetails.last_name";
+      expressionAttributeNames["#orderId"] = "orderId";
     }
 
     // Combine all filter expressions
