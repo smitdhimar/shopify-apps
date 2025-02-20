@@ -1,5 +1,5 @@
 locals {
-  lambda_functions = ["fera-handler", "search-handler", "personalizer-app-handler"]
+  lambda_functions = ["fera-handler", "search-handler", "personalizer-app-handler", "contact-us-handler"]
   layers           = ["api-helper", "package", "shopify-apis"]
 }
 # ======================= LAMBDA ROLE AND POLICY =======================
@@ -42,6 +42,14 @@ resource "aws_iam_policy" "iam_policy_for_lambda" {
         "arn:aws:lambda:*:*:layer:api-helper:*"
         ],
         "Effect": "Allow"
+      },
+       {
+        "Effect": "Allow",
+        "Action": [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ],
+        "Resource": "arn:aws:ses:*:*:*"
       }
   ]
   }
@@ -124,6 +132,26 @@ resource "aws_lambda_function" "fera-handler" {
   }
 }
 
+resource "aws_lambda_function" "contact-us-handler" {
+  function_name    = "contact-us-handler"
+  role             = aws_iam_role.lambda_execution_role.arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  filename         = data.archive_file.zip_the_lambda_code["contact-us-handler"].output_path
+  source_code_hash = data.archive_file.zip_the_lambda_code["contact-us-handler"].output_base64sha256
+  publish          = true
+  timeout          = 180
+  tracing_config {
+    mode = "Active"
+  }
+  environment {
+    variables = {
+      FROM_EMAIL = var.from_email
+      TO_EMAIL   = var.to_email
+    }
+
+  }
+}
 resource "aws_lambda_function" "search-handler" {
   function_name    = "search-handler"
   role             = aws_iam_role.lambda_execution_role.arn
@@ -135,6 +163,7 @@ resource "aws_lambda_function" "search-handler" {
   timeout          = 180
   layers           = [aws_lambda_layer_version.api-helper.arn]
   depends_on       = [aws_lambda_layer_version.api-helper]
+
   tracing_config {
     mode = "Active"
   }
@@ -171,6 +200,8 @@ resource "aws_lambda_function" "personalizer-app-handler" {
   tracing_config {
     mode = "Active"
   }
+
+
   environment {
     variables = {
       IMAGE_SET_TABLE_NAME      = var.image_set_table_name

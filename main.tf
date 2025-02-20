@@ -3,6 +3,7 @@ module "api_gateway" {
   fera-handler             = module.lambda.fera-handler
   search-handler           = module.lambda.search-handler
   personalizer-app-handler = module.lambda.personalizer-app-handler
+  contact-us-handler       = module.lambda.contact-us-handler
   lambda_functions         = module.lambda.lambda_functions
 }
 
@@ -22,6 +23,8 @@ module "lambda" {
   personalizer_product_config_table = module.dynamo.personalizer_product_config_table
   personalized_orders_table         = module.dynamo.personalized_orders_table_name
   image_bucket                      = var.image_bucket
+  from_email                        = var.from_email
+  to_email                          = var.to_email
 }
 
 module "s3_buckets" {
