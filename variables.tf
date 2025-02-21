@@ -38,7 +38,6 @@ variable "image_set_table_name" {
   type        = string
 }
 
-
 variable "shopify_store_name" {
   description = "shopify store name"
   type        = string
@@ -46,5 +45,14 @@ variable "shopify_store_name" {
 
 variable "shopify_admin_token" {
   description = "shopify admin token"
+  type        = string
+}
+
+variable "from_email" {
+  description = "from email"
+  type        = string
+}
+variable "to_email" {
+  description = "to email"
   type        = string
 }

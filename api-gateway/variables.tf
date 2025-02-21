@@ -4,6 +4,11 @@ variable "fera-handler" {
   type        = any
 }
 
+variable "contact-us-handler" {
+  description = "contact us handler var"
+  type        = any
+}
+
 variable "search-handler" {
   description = "The name of the lambda function used for the search query."
   type        = any

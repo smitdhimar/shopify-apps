@@ -69,3 +69,13 @@ variable "image_bucket" {
   description = "Name of the S3 bucket for images"
   type        = string
 }
+
+variable "from_email" {
+  description = "from email"
+  type        = string
+}
+variable "to_email" {
+  description = "to emai"
+  type        = string
+
+}
