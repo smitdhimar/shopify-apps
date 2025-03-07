@@ -10,6 +10,11 @@ resource "aws_cloudfront_distribution" "image_cdn" {
   default_root_object = "index.html"
   comment             = "CDN for image bucket"
 
+  # Add the alias that was manually created so it won’t be removed
+  aliases = [
+    "personaliser-media.celloworld.com",
+  ]
+
   origin {
     domain_name = var.s3_bucket_domain_name
     origin_id   = "S3-${var.s3_bucket_id}"
@@ -57,6 +62,7 @@ resource "aws_cloudfront_distribution" "image_cdn" {
 
   viewer_certificate {
     cloudfront_default_certificate = true
+    minimum_protocol_version       = "TLSv1"
   }
 
   wait_for_deployment = false
