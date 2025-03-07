@@ -4,6 +4,7 @@ import {
   DynamoDBDocumentClient,
   ScanCommand,
   BatchWriteCommand,
+  QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 const client = new DynamoDBClient({});
@@ -31,6 +32,7 @@ export const checkOrderPersonalization = async (order) => {
 
       const personalizedOrderItems = lineItems.map((item) => ({
         orderId: order.id.toString(),
+        __typename: "order",
         createdAt: order.created_at,
         status: order.status,
         billingAddress: order?.billing_address,
@@ -130,16 +132,20 @@ export const getOrders = async (queryParams) => {
     const scanParams = {
       TableName: tableName,
       Limit: parseInt(pageSize),
+      KeyConditionExpression: "#pk = :pk",
+      ExpressionAttributeNames: {
+        "#pk": "id",
+      },
+      ExpressionAttributeValues: {
+        ":pk": "order",
+      },
     };
 
     let filterExpressions = [];
-    let expressionAttributeValues = {};
-    let expressionAttributeNames = {};
 
     // Add cursor-based pagination
     if (cursor && cursor !== "undefined" && cursor !== "null") {
       try {
-        // Decode the cursor if it's base64
         let decodedCursor;
         try {
           decodedCursor = Buffer.from(cursor, "base64").toString("utf-8");
@@ -148,10 +154,9 @@ export const getOrders = async (queryParams) => {
           return buildResponse(400, { message: "Invalid cursor format" });
         }
 
-        // Parse the JSON
         try {
           const parsedCursor = JSON.parse(decodedCursor);
-          if (parsedCursor && parsedCursor.orderId && parsedCursor.id) {
+          if (parsedCursor && parsedCursor.id && parsedCursor.createdAt) {
             scanParams.ExclusiveStartKey = parsedCursor;
           } else {
             throw new Error("Invalid cursor structure");
@@ -169,50 +174,62 @@ export const getOrders = async (queryParams) => {
       }
     }
 
-    // Add date filter if dates are provided
-    if (startDate) {
-      filterExpressions.push("#createdAt >= :startDate");
-      expressionAttributeValues[":startDate"] = new Date(
-        startDate
-      ).toISOString();
-      expressionAttributeNames["#createdAt"] = "createdAt";
-    }
+    // Add date filter using KeyConditionExpression
+    if (startDate || endDate) {
+      let dateCondition = "";
+      if (startDate && endDate) {
+        dateCondition = "#sk BETWEEN :startDate AND :endDate";
+        scanParams.ExpressionAttributeValues[":startDate"] = new Date(
+          startDate
+        ).toISOString();
+        scanParams.ExpressionAttributeValues[":endDate"] = new Date(
+          endDate
+        ).toISOString();
+      } else if (startDate) {
+        dateCondition = "#sk >= :startDate";
+        scanParams.ExpressionAttributeValues[":startDate"] = new Date(
+          startDate
+        ).toISOString();
+      } else if (endDate) {
+        dateCondition = "#sk <= :endDate";
+        scanParams.ExpressionAttributeValues[":endDate"] = new Date(
+          endDate
+        ).toISOString();
+      }
 
-    if (endDate) {
-      filterExpressions.push("#createdAt <= :endDate");
-      expressionAttributeValues[":endDate"] = new Date(endDate).toISOString();
-      expressionAttributeNames["#createdAt"] = "createdAt";
+      scanParams.KeyConditionExpression += ` AND ${dateCondition}`;
+      scanParams.ExpressionAttributeNames["#sk"] = "createdAt";
     }
 
     // Add search filter if searchTerm is provided
     if (searchTerm) {
-      // Construct filter expressions for the search term using lowercase fields and orderId
       filterExpressions.push(
-        "(contains(#customerEmailLower, :searchTerm) OR " +
-          "contains(#customerFirstNameLower, :searchTerm) OR " +
-          "contains(#customerLastNameLower, :searchTerm) OR " +
+        "(contains(#customerEmail, :searchTerm) OR " +
+          "contains(#customerFirstName, :searchTerm) OR " +
+          "contains(#customerLastName, :searchTerm) OR " +
           "contains(#orderId, :searchTerm))"
       );
 
-      expressionAttributeValues[":searchTerm"] = searchTerm;
-      expressionAttributeNames["#customerEmailLower"] = "customerDetails.email";
-      expressionAttributeNames["#customerFirstNameLower"] =
-        "customerDetails.first_name";
-      expressionAttributeNames["#customerLastNameLower"] =
-        "customerDetails.last_name";
-      expressionAttributeNames["#orderId"] = "orderId";
+      scanParams.ExpressionAttributeValues[":searchTerm"] =
+        searchTerm.toLowerCase();
+      scanParams.ExpressionAttributeNames = {
+        ...scanParams.ExpressionAttributeNames,
+        "#customerEmail": "customerDetails.email",
+        "#customerFirstName": "customerDetails.first_name",
+        "#customerLastName": "customerDetails.last_name",
+        "#orderId": "orderId",
+      };
     }
 
-    // Combine all filter expressions
+    // Add FilterExpression if there are any filter conditions
     if (filterExpressions.length > 0) {
       scanParams.FilterExpression = filterExpressions.join(" AND ");
-      scanParams.ExpressionAttributeValues = expressionAttributeValues;
-      scanParams.ExpressionAttributeNames = expressionAttributeNames;
     }
 
-    console.log("🔥 Scan Params:", JSON.stringify(scanParams, null, 2));
+    console.log("🔥 Query Params:", JSON.stringify(scanParams, null, 2));
 
-    const command = new ScanCommand(scanParams);
+    // Change from ScanCommand to QueryCommand since we're using key conditions
+    const command = new QueryCommand(scanParams);
     const result = await docClient.send(command);
 
     console.log("🔥 DynamoDB Result:", JSON.stringify(result, null, 2));

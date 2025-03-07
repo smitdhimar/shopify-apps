@@ -125,16 +125,16 @@ output "product_config_table_name" {
 resource "aws_dynamodb_table" "personalized_orders" {
   name         = "personalizer-order-table"
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "orderId"
-  range_key    = "id" # Using line item ID as sort key
+  hash_key     = "__typename"
+  range_key    = "createdAt"
 
   attribute {
-    name = "orderId"
+    name = "__typename"
     type = "S"
   }
 
   attribute {
-    name = "id"
+    name = "createdAt"
     type = "S"
   }
 
