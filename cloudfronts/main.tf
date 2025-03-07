@@ -11,9 +11,9 @@ resource "aws_cloudfront_distribution" "image_cdn" {
   comment             = "CDN for image bucket"
 
   # Add the alias that was manually created so it won’t be removed
-  aliases = [
-    "personaliser-media.celloworld.com",
-  ]
+  # aliases = [
+  #   "personaliser-media.celloworld.com",
+  # ]
 
   origin {
     domain_name = var.s3_bucket_domain_name

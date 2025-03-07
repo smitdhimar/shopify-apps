@@ -167,16 +167,24 @@ export const getOrders = async (queryParams) => {
     if (startDate || endDate) {
       let dateCondition = "";
 
-      if (startDate && endDate) {
+      // Convert startDate and endDate to IST by adding 5 hours and 30 minutes
+      const startIST = startDate
+        ? new Date(new Date(startDate).getTime() + 19800000).toISOString()
+        : null; // 5 hours 30 minutes in milliseconds
+      const endIST = endDate
+        ? new Date(new Date(endDate).getTime() + 19800000).toISOString()
+        : null;
+
+      if (startIST && endIST) {
         dateCondition = "#sk BETWEEN :startDate AND :endDate";
-        queryParamsBase.ExpressionAttributeValues[":startDate"] = startDate;
-        queryParamsBase.ExpressionAttributeValues[":endDate"] = endDate;
-      } else if (startDate) {
+        queryParamsBase.ExpressionAttributeValues[":startDate"] = startIST;
+        queryParamsBase.ExpressionAttributeValues[":endDate"] = endIST;
+      } else if (startIST) {
         dateCondition = "#sk >= :startDate";
-        queryParamsBase.ExpressionAttributeValues[":startDate"] = startDate;
-      } else if (endDate) {
+        queryParamsBase.ExpressionAttributeValues[":startDate"] = startIST;
+      } else if (endIST) {
         dateCondition = "#sk <= :endDate";
-        queryParamsBase.ExpressionAttributeValues[":endDate"] = endDate;
+        queryParamsBase.ExpressionAttributeValues[":endDate"] = endIST;
       }
 
       queryParamsBase.KeyConditionExpression += ` AND ${dateCondition}`;
