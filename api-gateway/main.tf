@@ -1,5 +1,4 @@
 data "aws_region" "current" {}
-
 resource "aws_apigatewayv2_api" "http_api" {
   name          = "http-api"
   protocol_type = "HTTP"
