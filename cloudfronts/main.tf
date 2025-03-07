@@ -3,6 +3,12 @@ resource "aws_cloudfront_origin_access_identity" "oai" {
   comment = "OAI for image bucket"
 }
 
+data "aws_acm_certificate" "image_cdn_cert" {
+  domain      = "personaliser-media.celloworld.com"
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
 # Create CloudFront distribution
 resource "aws_cloudfront_distribution" "image_cdn" {
   enabled             = true
@@ -10,10 +16,7 @@ resource "aws_cloudfront_distribution" "image_cdn" {
   default_root_object = "index.html"
   comment             = "CDN for image bucket"
 
-  # Add the alias that was manually created so it won’t be removed
-  # aliases = [
-  #   "personaliser-media.celloworld.com",
-  # ]
+  aliases = [ "personaliser-media.celloworld.com" ]
 
   origin {
     domain_name = var.s3_bucket_domain_name
@@ -61,8 +64,9 @@ resource "aws_cloudfront_distribution" "image_cdn" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
-    minimum_protocol_version       = "TLSv1"
+    acm_certificate_arn      = data.aws_acm_certificate.image_cdn_cert.arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 
   wait_for_deployment = false
