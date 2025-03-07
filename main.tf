@@ -5,6 +5,9 @@ module "api_gateway" {
   personalizer-app-handler = module.lambda.personalizer-app-handler
   contact-us-handler       = module.lambda.contact-us-handler
   lambda_functions         = module.lambda.lambda_functions
+  cognito_client_id        = module.cognitoPoolIdentity.cognito_client_id
+  cognito_user_pool_id     = module.cognitoPoolIdentity.cognito_user_pool_id
+  cognito_user_pool_arn    = module.cognitoPoolIdentity.cognito_user_pool_arn
 }
 
 module "lambda" {

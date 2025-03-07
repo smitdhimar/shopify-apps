@@ -23,3 +23,17 @@ variable "lambda_functions" {
   description = "The name of the stack"
   type        = any
 }
+variable "cognito_client_id" {
+  description = "The name of the stack"
+  type        = any
+}
+
+variable "cognito_user_pool_id" {
+  description = "The name of the stack"
+  type        = any
+}
+
+variable "cognito_user_pool_arn" {
+  description = "The name of the stack"
+  type        = any
+}
