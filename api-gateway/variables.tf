@@ -1,4 +1,3 @@
-
 variable "fera-handler" {
   description = "The name of the stack"
   type        = any
@@ -23,14 +22,15 @@ variable "lambda_functions" {
   description = "The name of the stack"
   type        = any
 }
+
 variable "cognito_client_id" {
-  description = "The name of the stack"
-  type        = any
+  description = "The ID of the Cognito User Pool Client"
+  type        = string
 }
 
 variable "cognito_user_pool_id" {
-  description = "The name of the stack"
-  type        = any
+  description = "The ID of the Cognito User Pool"
+  type        = string
 }
 
 variable "cognito_user_pool_arn" {

@@ -1,3 +1,5 @@
+data "aws_region" "current" {}
+
 resource "aws_apigatewayv2_api" "http_api" {
   name          = "http-api"
   protocol_type = "HTTP"
@@ -35,9 +37,9 @@ resource "aws_apigatewayv2_authorizer" "cognito" {
   api_id           = aws_apigatewayv2_api.http_api.id
   authorizer_type  = "JWT"
   identity_sources = ["$request.header.Authorization"]
-  
+
   jwt_configuration {
-    audience = [aws_cognito_user_pool_client.client.id]
-    issuer   = "https://cognito-idp.${data.aws_region.current.name}.amazonaws.com/${var.cognito_client_id}"
+    audience = [var.cognito_client_id]
+    issuer   = "https://cognito-idp.${data.aws_region.current.name}.amazonaws.com/${var.cognito_user_pool_id}"
   }
 }
