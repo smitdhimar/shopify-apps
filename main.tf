@@ -39,6 +39,7 @@ module "cloudfronts" {
   source                = "./cloudfronts"
   s3_bucket_domain_name = module.s3_buckets.bucket_domain_name
   s3_bucket_id          = module.s3_buckets.bucket_id
+  image_cdn_cert_arn    = var.image_cdn_cert_arn
 }
 
 module "amplify" {

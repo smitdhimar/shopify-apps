@@ -115,6 +115,7 @@ export const checkOrderPersonalization = async (order) => {
     return buildResponse(500, { message: error.message });
   }
 };
+
 export const getOrders = async (queryParams) => {
   try {
     console.log("🔥 Query Params received:", queryParams);
@@ -133,6 +134,7 @@ export const getOrders = async (queryParams) => {
     // Base query parameters
     const queryParamsBase = {
       TableName: tableName,
+      IndexName: "personalized-orders-index",
       Limit: limit,
       KeyConditionExpression: "#typename = :typename",
       ExpressionAttributeNames: {
@@ -169,11 +171,17 @@ export const getOrders = async (queryParams) => {
 
       // Convert startDate and endDate to IST by adding 5 hours and 30 minutes
       const startIST = startDate
-        ? new Date(new Date(startDate).getTime() + 19800000).toISOString()
+        ? new Date(
+            new Date(startDate).setHours(0, 0, 0, 0) + 19800000
+          ).toISOString() // Start of the day
         : null; // 5 hours 30 minutes in milliseconds
       const endIST = endDate
-        ? new Date(new Date(endDate).getTime() + 19800000).toISOString()
+        ? new Date(
+            new Date(endDate).setHours(23, 59, 59, 999) + 19800000
+          ).toISOString() // End of the day
         : null;
+      
+  
 
       if (startIST && endIST) {
         dateCondition = "#sk BETWEEN :startDate AND :endDate";

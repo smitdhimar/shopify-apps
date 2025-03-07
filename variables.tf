@@ -56,3 +56,9 @@ variable "to_email" {
   description = "to email"
   type        = string
 }
+
+variable "image_cdn_cert_arn" {
+  description = "image cdn cert arn"
+  type        = string
+  default     = "arn:aws:acm:us-east-1:724772052309:certificate/cdf8eb35-c655-49d4-9fb6-a492c03d0258"
+}

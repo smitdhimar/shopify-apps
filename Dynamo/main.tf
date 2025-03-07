@@ -125,8 +125,25 @@ output "product_config_table_name" {
 resource "aws_dynamodb_table" "personalized_orders" {
   name         = "personalizer-order-table"
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "__typename"
-  range_key    = "createdAt"
+  hash_key     = "orderId"
+  range_key    = "id"
+
+  attribute {
+    name = "orderId"
+    type = "S"
+  }
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "personalized-orders-index"
+    hash_key        = "__typename"
+    range_key       = "createdAt"
+    projection_type = "ALL"
+  }
 
   attribute {
     name = "__typename"
