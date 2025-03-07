@@ -118,6 +118,6 @@ resource "aws_cognito_identity_pool_roles_attachment" "personalizer_identity_poo
 
   roles = {
     unauthenticated = aws_iam_role.unauthenticated_role.arn
-    authenticated  = aws_iam_role.authenticated.arn
+    authenticated   = aws_iam_role.authenticated.arn
   }
 }

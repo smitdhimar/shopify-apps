@@ -55,7 +55,7 @@ export const handler = async (event) => {
       case "FETCH_IMAGE_SET":
         return fetchImageSet(pathParameters.id);
 
-      case "IS_PRODUCT_CUSTOMIZED":
+      // case "IS_PRODUCT_CUSTOMIZED":
 
       case "UPDATE_IMAGE_SET":
         return updateImageSet(body, pathParameters.id);

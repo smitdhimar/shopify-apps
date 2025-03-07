@@ -1,8 +1,8 @@
 export const getPathAction = (path, httpMethod) => {
   if (path === "/personalizer/image-sets" && httpMethod === "GET")
     return "FETCH_IMAGE_SETS";
-  if (path === "/personalizer/product/{id}" && httpMethod === "POST")
-    return "IS_PRODUCT_CUSTOMIZED";
+  // if (path === "/personalizer/product/{id}" && httpMethod === "POST")
+  //   return "IS_PRODUCT_CUSTOMIZED";
   if (path === "/personalizer/image-set/{id}" && httpMethod === "GET")
     return "FETCH_IMAGE_SET";
   if (path === "/personalizer/image-set/create" && httpMethod === "POST")
