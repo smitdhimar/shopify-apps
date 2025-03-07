@@ -115,7 +115,6 @@ export const checkOrderPersonalization = async (order) => {
     return buildResponse(500, { message: error.message });
   }
 };
-
 export const getOrders = async (queryParams) => {
   try {
     console.log("🔥 Query Params received:", queryParams);
@@ -125,83 +124,68 @@ export const getOrders = async (queryParams) => {
       endDate,
       searchTerm,
       cursor,
-      pageSize = "20", // Default to 20 items
+      pageSize = "20",
     } = queryParams || {};
 
-    // Base scan parameters
-    const scanParams = {
+    // Ensure the pageSize is a valid integer
+    const limit = parseInt(pageSize, 10) || 20;
+
+    // Base query parameters
+    const queryParamsBase = {
       TableName: tableName,
-      Limit: parseInt(pageSize),
-      KeyConditionExpression: "#pk = :pk",
+      Limit: limit,
+      KeyConditionExpression: "#typename = :typename",
       ExpressionAttributeNames: {
-        "#pk": "id",
+        "#typename": "__typename",
       },
       ExpressionAttributeValues: {
-        ":pk": "order",
+        ":typename": "order",
       },
     };
 
-    let filterExpressions = [];
-
-    // Add cursor-based pagination
+    // Handle cursor-based pagination
     if (cursor && cursor !== "undefined" && cursor !== "null") {
       try {
-        let decodedCursor;
-        try {
-          decodedCursor = Buffer.from(cursor, "base64").toString("utf-8");
-        } catch (e) {
-          console.error("❌ Base64 decode error:", e);
-          return buildResponse(400, { message: "Invalid cursor format" });
-        }
+        const decodedCursor = Buffer.from(cursor, "base64").toString("utf-8");
+        const parsedCursor = JSON.parse(decodedCursor);
 
-        try {
-          const parsedCursor = JSON.parse(decodedCursor);
-          if (parsedCursor && parsedCursor.id && parsedCursor.createdAt) {
-            scanParams.ExclusiveStartKey = parsedCursor;
-          } else {
-            throw new Error("Invalid cursor structure");
-          }
-        } catch (e) {
-          console.error("❌ JSON parse error:", e);
-          return buildResponse(400, { message: "Invalid cursor data" });
+        if (parsedCursor && parsedCursor.id && parsedCursor.createdAt) {
+          queryParamsBase.ExclusiveStartKey = parsedCursor;
+        } else {
+          throw new Error("Invalid cursor structure");
         }
       } catch (error) {
         console.error("❌ Cursor processing error:", error);
         return buildResponse(400, {
-          message: "Invalid cursor provided",
+          message: "Invalid cursor format",
           error: error.message,
         });
       }
     }
 
-    // Add date filter using KeyConditionExpression
+    // Add date filter using KeyConditionExpression if a Sort Key (e.g., createdAt) exists
     if (startDate || endDate) {
       let dateCondition = "";
+
       if (startDate && endDate) {
         dateCondition = "#sk BETWEEN :startDate AND :endDate";
-        scanParams.ExpressionAttributeValues[":startDate"] = new Date(
-          startDate
-        ).toISOString();
-        scanParams.ExpressionAttributeValues[":endDate"] = new Date(
-          endDate
-        ).toISOString();
+        queryParamsBase.ExpressionAttributeValues[":startDate"] = startDate;
+        queryParamsBase.ExpressionAttributeValues[":endDate"] = endDate;
       } else if (startDate) {
         dateCondition = "#sk >= :startDate";
-        scanParams.ExpressionAttributeValues[":startDate"] = new Date(
-          startDate
-        ).toISOString();
+        queryParamsBase.ExpressionAttributeValues[":startDate"] = startDate;
       } else if (endDate) {
         dateCondition = "#sk <= :endDate";
-        scanParams.ExpressionAttributeValues[":endDate"] = new Date(
-          endDate
-        ).toISOString();
+        queryParamsBase.ExpressionAttributeValues[":endDate"] = endDate;
       }
 
-      scanParams.KeyConditionExpression += ` AND ${dateCondition}`;
-      scanParams.ExpressionAttributeNames["#sk"] = "createdAt";
+      queryParamsBase.KeyConditionExpression += ` AND ${dateCondition}`;
+      queryParamsBase.ExpressionAttributeNames["#sk"] = "createdAt"; // Ensure this is your sort key
     }
 
-    // Add search filter if searchTerm is provided
+    // Add search filters for non-key attributes
+    let filterExpressions = [];
+
     if (searchTerm) {
       filterExpressions.push(
         "(contains(#customerEmail, :searchTerm) OR " +
@@ -210,10 +194,10 @@ export const getOrders = async (queryParams) => {
           "contains(#orderId, :searchTerm))"
       );
 
-      scanParams.ExpressionAttributeValues[":searchTerm"] =
+      queryParamsBase.ExpressionAttributeValues[":searchTerm"] =
         searchTerm.toLowerCase();
-      scanParams.ExpressionAttributeNames = {
-        ...scanParams.ExpressionAttributeNames,
+      queryParamsBase.ExpressionAttributeNames = {
+        ...queryParamsBase.ExpressionAttributeNames,
         "#customerEmail": "customerDetails.email",
         "#customerFirstName": "customerDetails.first_name",
         "#customerLastName": "customerDetails.last_name",
@@ -221,38 +205,35 @@ export const getOrders = async (queryParams) => {
       };
     }
 
-    // Add FilterExpression if there are any filter conditions
+    // Add FilterExpression if there are any search filters
     if (filterExpressions.length > 0) {
-      scanParams.FilterExpression = filterExpressions.join(" AND ");
+      queryParamsBase.FilterExpression = filterExpressions.join(" AND ");
     }
 
-    console.log("🔥 Query Params:", JSON.stringify(scanParams, null, 2));
+    console.log("🔥 Query Params:", JSON.stringify(queryParamsBase, null, 2));
 
-    // Change from ScanCommand to QueryCommand since we're using key conditions
-    const command = new QueryCommand(scanParams);
+    // Execute the query
+    const command = new QueryCommand(queryParamsBase);
     const result = await docClient.send(command);
 
     console.log("🔥 DynamoDB Result:", JSON.stringify(result, null, 2));
 
-    // Check if Items exist
+    // Check if items exist
     if (!result.Items || result.Items.length === 0) {
       return buildResponse(200, {
         message: "No data found",
         data: [],
-        pagination: {
-          nextCursor: null,
-          hasMore: false,
-        },
+        pagination: { nextCursor: null, hasMore: false },
       });
     }
 
-    // Create base64 cursor for next page
+    // Generate next cursor
     const nextCursor = result.LastEvaluatedKey
       ? Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString("base64")
       : null;
 
     return buildResponse(200, {
-      message: "Orders returned",
+      message: "Orders returned successfully",
       data: result.Items,
       pagination: {
         nextCursor,
