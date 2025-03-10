@@ -66,9 +66,11 @@ resource "aws_iam_role" "backend_role" {
 # Image Set Table
 # --------------------------------  
 resource "aws_dynamodb_table" "image_sets_personlizer_app" {
-  name         = var.image_set_table_name
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
+  name           = var.image_set_table_name
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 5
+  write_capacity = 5
+  hash_key       = "id"
   attribute {
     name = "id"
     type = "S"
@@ -83,9 +85,11 @@ resource "aws_dynamodb_table" "image_sets_personlizer_app" {
 # Image Set Table
 # --------------------------------  
 resource "aws_dynamodb_table" "personalizer_products" {
-  name         = "personalizer-product-table"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
+  name           = "personalizer-product-table"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 5
+  write_capacity = 5
+  hash_key       = "id"
   attribute {
     name = "id"
     type = "S"
@@ -97,10 +101,12 @@ resource "aws_dynamodb_table" "personalizer_products" {
 
 # Product Config Table
 resource "aws_dynamodb_table" "product_config_table" {
-  name         = "personalizer-product-config-table"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "productId"
-  range_key    = "id"
+  name           = "personalizer-product-config-table"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 5
+  write_capacity = 5
+  hash_key       = "productId"
+  range_key      = "id"
 
   attribute {
     name = "productId"
@@ -123,10 +129,12 @@ output "product_config_table_name" {
 
 # Personalized Orders Table
 resource "aws_dynamodb_table" "personalized_orders" {
-  name         = "personalizer-order-table"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "orderId"
-  range_key    = "id"
+  name           = "personalizer-order-table"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 5
+  write_capacity = 5
+  hash_key       = "orderId"
+  range_key      = "id"
 
   attribute {
     name = "orderId"
@@ -139,10 +147,12 @@ resource "aws_dynamodb_table" "personalized_orders" {
   }
 
   global_secondary_index {
-    name            = "personalized-orders-index"
-    hash_key        = "__typename"
-    range_key       = "createdAt"
-    projection_type = "ALL"
+    name               = "personalized-orders-index"
+    hash_key          = "__typename"
+    range_key         = "createdAt"
+    projection_type   = "ALL"
+    read_capacity     = 5
+    write_capacity    = 5
   }
 
   attribute {
