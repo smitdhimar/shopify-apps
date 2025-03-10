@@ -22,6 +22,7 @@ resource "aws_iam_policy" "dynamodb_access" {
           "dynamodb:BatchWriteItem",
           "dynamodb:Scan",
           "dynamodb:Query",
+          "dynamodb:BatchGetItem",
           "s3:PutObject",
           "s3:GetObject"
         ]
@@ -29,6 +30,7 @@ resource "aws_iam_policy" "dynamodb_access" {
           "arn:aws:logs:*:*:*",
           "arn:aws:lambda:*:*:layer:api-helper:*",
           "arn:aws:dynamodb:*:*:table/*",
+          "arn:aws:dynamodb:*:*:table/*/index/*",
           "arn:aws:s3:::${var.image_bucket}/*"
         ]
       }
@@ -147,12 +149,21 @@ resource "aws_dynamodb_table" "personalized_orders" {
   }
 
   global_secondary_index {
-    name               = "personalized-orders-index"
-    hash_key          = "__typename"
-    range_key         = "createdAt"
-    projection_type   = "ALL"
-    read_capacity     = 5
-    write_capacity    = 5
+    name            = "personalized-orders-index"
+    hash_key        = "__typename"
+    range_key       = "createdAt"
+    projection_type = "ALL"
+    read_capacity   = 5
+    write_capacity  = 5
+  }
+
+  global_secondary_index {
+    name            = "search-order-index"
+    hash_key        = "__typename"
+    range_key       = "orderId"
+    projection_type = "ALL"
+    read_capacity   = 5
+    write_capacity  = 5
   }
 
   attribute {

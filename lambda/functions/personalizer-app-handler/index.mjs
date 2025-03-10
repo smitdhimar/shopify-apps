@@ -25,7 +25,7 @@ import {
   deleteProductConfig,
   getProductByProductId,
 } from "./productConfigHandler.mjs";
-import { checkOrderPersonalization, getOrders } from "./orderHandler.mjs";
+import { checkOrderPersonalization, getOrders, searchOrders } from "./orderHandler.mjs";
 import { generatePresignedUrl } from "./s3Handler.mjs";
 
 export const handler = async (event) => {
@@ -95,6 +95,8 @@ export const handler = async (event) => {
       case "GENERATE_PRESIGNED_URL":
         const { fileName, contentType } = body;
         return generatePresignedUrl(fileName, contentType);
+      case "SEARCH_ORDERS":
+        return searchOrders(queryStringParameters);
       default:
         return buildResponse(404, { message: "❌ Resource Not Found" });
     }

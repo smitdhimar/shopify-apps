@@ -121,13 +121,7 @@ export const getOrders = async (queryParams) => {
   try {
     console.log("🔥 Query Params received:", queryParams);
 
-    const {
-      startDate,
-      endDate,
-      searchTerm,
-      cursor,
-      pageSize = "20",
-    } = queryParams || {};
+    const { startDate, endDate, cursor, pageSize = "20" } = queryParams || {};
 
     // Ensure the pageSize is a valid integer
     const limit = parseInt(pageSize, 10) || 20;
@@ -199,33 +193,6 @@ export const getOrders = async (queryParams) => {
       queryParamsBase.ExpressionAttributeNames["#sk"] = "createdAt"; // Ensure this is your sort key
     }
 
-    // Add search filters for non-key attributes
-    let filterExpressions = [];
-
-    if (searchTerm) {
-      filterExpressions.push(
-        "(contains(#customerEmail, :searchTerm) OR " +
-          "contains(#customerFirstName, :searchTerm) OR " +
-          "contains(#customerLastName, :searchTerm) OR " +
-          "contains(#orderId, :searchTerm))"
-      );
-
-      queryParamsBase.ExpressionAttributeValues[":searchTerm"] =
-        searchTerm.toLowerCase();
-      queryParamsBase.ExpressionAttributeNames = {
-        ...queryParamsBase.ExpressionAttributeNames,
-        "#customerEmail": "customerDetails.email",
-        "#customerFirstName": "customerDetails.first_name",
-        "#customerLastName": "customerDetails.last_name",
-        "#orderId": "orderId",
-      };
-    }
-
-    // Add FilterExpression if there are any search filters
-    if (filterExpressions.length > 0) {
-      queryParamsBase.FilterExpression = filterExpressions.join(" AND ");
-    }
-
     console.log("🔥 Query Params:", JSON.stringify(queryParamsBase, null, 2));
 
     // Execute the query
@@ -260,6 +227,54 @@ export const getOrders = async (queryParams) => {
     });
   } catch (error) {
     console.error("❌ Error in fetching orders:", error);
+    return buildResponse(500, { message: error.message });
+  }
+};
+
+export const searchOrders = async (queryParams) => {
+  try {
+    console.log("🔥 Query Params received:", queryParams);
+
+    const { searchTerm } = queryParams || {};
+
+    const queryParamsBase = {
+      TableName: tableName,
+      IndexName: "search-order-index",
+      Limit: 20,
+      KeyConditionExpression: "#typename = :typename",
+      ExpressionAttributeNames: {
+        "#typename": "__typename",
+        "#orderId": "orderId",
+      },
+      ExpressionAttributeValues: {
+        ":typename": "order",
+      },
+      ScanIndexForward: false,
+    };
+
+    if (!searchTerm) {
+      return buildResponse(400, {
+        message: "Search term is required",
+      });
+    }
+
+    if (searchTerm) {
+      queryParamsBase.KeyConditionExpression =
+        "#typename = :typename AND begins_with(#orderId, :searchTerm)";
+      queryParamsBase.ExpressionAttributeValues[":searchTerm"] = searchTerm;
+    }
+
+    const command = new QueryCommand(queryParamsBase);
+    const result = await docClient.send(command);
+
+    console.log("🔥 DynamoDB Result:", JSON.stringify(result, null, 2));
+
+    return buildResponse(200, {
+      message: "Orders returned successfully",
+      data: result.Items,
+    });
+  } catch (error) {
+    console.error("❌ Error in searching orders:", error);
     return buildResponse(500, { message: error.message });
   }
 };

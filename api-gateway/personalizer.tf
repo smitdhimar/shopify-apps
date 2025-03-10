@@ -177,3 +177,12 @@ resource "aws_apigatewayv2_route" "generate_upload_url_route" {
   route_key = "POST /personalizer/generate-upload-url"
   target    = "integrations/${aws_apigatewayv2_integration.personalizer_lambda_integration.id}"
 }
+
+# POST /personalizer/search-orders Route
+resource "aws_apigatewayv2_route" "search_orders_route" {
+  api_id             = aws_apigatewayv2_api.http_api.id
+  route_key          = "GET /personalizer/search-orders"
+  target             = "integrations/${aws_apigatewayv2_integration.personalizer_lambda_integration.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
