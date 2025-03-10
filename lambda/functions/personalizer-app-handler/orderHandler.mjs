@@ -34,7 +34,8 @@ export const checkOrderPersonalization = async (order) => {
         orderId: order.id.toString(),
         __typename: "order",
         createdAt: order.created_at,
-        status: order.status,
+        paymentStatus: order.financial_status,
+        fulfillmentStatus: order.fulfillment_status,
         billingAddress: order?.billing_address,
         shippingAddress: order?.shipping_address,
         defaultAddress: order?.default_address,
@@ -143,6 +144,7 @@ export const getOrders = async (queryParams) => {
       ExpressionAttributeValues: {
         ":typename": "order",
       },
+      ScanIndexForward: false,
     };
 
     // Handle cursor-based pagination
@@ -180,8 +182,6 @@ export const getOrders = async (queryParams) => {
             new Date(endDate).setHours(23, 59, 59, 999) + 19800000
           ).toISOString() // End of the day
         : null;
-      
-  
 
       if (startIST && endIST) {
         dateCondition = "#sk BETWEEN :startDate AND :endDate";
