@@ -142,12 +142,22 @@ resource "aws_dynamodb_table" "personalized_orders" {
     name = "orderId"
     type = "S"
   }
-
+  attribute {
+    name = "orderNumber"
+    type = "S"
+  }
   attribute {
     name = "id"
     type = "S"
   }
-
+  global_secondary_index {
+    name            = "search-by-order-number-index"
+    hash_key        = "__typename"
+    range_key       = "orderNumber"
+    projection_type = "ALL"
+    read_capacity   = 5
+    write_capacity  = 5
+  }
   global_secondary_index {
     name            = "personalized-orders-index"
     hash_key        = "__typename"

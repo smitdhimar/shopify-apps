@@ -33,6 +33,8 @@ export const checkOrderPersonalization = async (order) => {
       const personalizedOrderItems = lineItems.map((item) => ({
         orderId: order.id.toString(),
         __typename: "order",
+        orderNumber: order?.order_number.toString(),
+        cancelledAt: order?.cancelled_at || null,
         createdAt: order.created_at,
         paymentStatus: order.financial_status,
         fulfillmentStatus: order.fulfillment_status,
@@ -40,6 +42,7 @@ export const checkOrderPersonalization = async (order) => {
         shippingAddress: order?.shipping_address,
         defaultAddress: order?.default_address,
         id: item.id.toString(),
+        sku: item.sku,
         productId: item.product_id,
         variantId: item.variant_id,
         quantity: item.quantity,
@@ -50,7 +53,6 @@ export const checkOrderPersonalization = async (order) => {
         productName: item.name,
         totalPrice: item.total_price,
         customerDetails: order.customer,
-        createdAt: new Date().toISOString(),
         properties: item.properties.reduce((acc, property) => {
           acc[property.name] = property.value;
           return acc;
@@ -98,6 +100,7 @@ export const checkOrderPersonalization = async (order) => {
       message: "Order personalization status checked",
       data: {
         orderId: order.id,
+        orderNumber: order?.order_number,
         orderName: order.name,
         isPersonalized: isPersonalized,
         lineItems: order.line_items.map((item) => ({
@@ -237,41 +240,61 @@ export const searchOrders = async (queryParams) => {
 
     const { searchTerm } = queryParams || {};
 
-    const queryParamsBase = {
-      TableName: tableName,
-      IndexName: "search-order-index",
-      Limit: 20,
-      KeyConditionExpression: "#typename = :typename",
-      ExpressionAttributeNames: {
-        "#typename": "__typename",
-        "#orderId": "orderId",
-      },
-      ExpressionAttributeValues: {
-        ":typename": "order",
-      },
-      ScanIndexForward: false,
-    };
-
     if (!searchTerm) {
       return buildResponse(400, {
         message: "Search term is required",
       });
     }
 
-    if (searchTerm) {
-      queryParamsBase.KeyConditionExpression =
-        "#typename = :typename AND begins_with(#orderId, :searchTerm)";
-      queryParamsBase.ExpressionAttributeValues[":searchTerm"] = searchTerm;
-    }
+    // Search by orderId
+    const orderIdParams = {
+      TableName: tableName,
+      IndexName: "search-order-index",
+      Limit: 20,
+      KeyConditionExpression: "#typename = :typename AND begins_with(#orderId, :searchTerm)",
+      ExpressionAttributeNames: {
+        "#typename": "__typename",
+        "#orderId": "orderId",
+      },
+      ExpressionAttributeValues: {
+        ":typename": "order",
+        ":searchTerm": searchTerm
+      },
+      ScanIndexForward: false,
+    };
 
-    const command = new QueryCommand(queryParamsBase);
-    const result = await docClient.send(command);
+    // Search by orderNumber
+    const orderNumberParams = {
+      TableName: tableName,
+      IndexName: "search-by-order-number-index",
+      Limit: 20,
+      KeyConditionExpression: "#typename = :typename AND begins_with(#orderNumber, :searchTerm)",
+      ExpressionAttributeNames: {
+        "#typename": "__typename",
+        "#orderNumber": "orderNumber",
+      },
+      ExpressionAttributeValues: {
+        ":typename": "order",
+        ":searchTerm": searchTerm
+      },
+      ScanIndexForward: false,
+    };
 
-    console.log("🔥 DynamoDB Result:", JSON.stringify(result, null, 2));
+    const [orderIdResults, orderNumberResults] = await Promise.all([
+      docClient.send(new QueryCommand(orderIdParams)),
+      docClient.send(new QueryCommand(orderNumberParams))
+    ]);
+
+    console.log("🔥 DynamoDB OrderId Results:", JSON.stringify(orderIdResults, null, 2));
+    console.log("🔥 DynamoDB OrderNumber Results:", JSON.stringify(orderNumberResults, null, 2));
+
+    // Combine and deduplicate results based on orderId
+    const combinedItems = [...(orderIdResults.Items || []), ...(orderNumberResults.Items || [])];
+    const uniqueItems = Array.from(new Map(combinedItems.map(item => [item.orderId, item])).values());
 
     return buildResponse(200, {
       message: "Orders returned successfully",
-      data: result.Items,
+      data: uniqueItems,
     });
   } catch (error) {
     console.error("❌ Error in searching orders:", error);
