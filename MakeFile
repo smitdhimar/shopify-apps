@@ -14,5 +14,5 @@ cello-plan:
 cello-apply:
 	@echo "Running terraform apply with ${TFVARS_FILE}..."
 	terraform fmt -recursive
-	terraform apply -var-file=${TFVARS_FILE} --auto-approve
+	terraform apply -var-file=${TFVARS_FILE} 
 

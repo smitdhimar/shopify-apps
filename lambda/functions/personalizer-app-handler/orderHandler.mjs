@@ -30,34 +30,44 @@ export const checkOrderPersonalization = async (order) => {
         )
       );
 
-      const personalizedOrderItems = lineItems.map((item) => ({
-        orderId: order.id.toString(),
-        __typename: "order",
-        orderNumber: order?.order_number.toString(),
-        cancelledAt: order?.cancelled_at || null,
-        createdAt: order.created_at,
-        paymentStatus: order.financial_status,
-        fulfillmentStatus: order.fulfillment_status,
-        billingAddress: order?.billing_address,
-        shippingAddress: order?.shipping_address,
-        defaultAddress: order?.default_address,
-        id: item.id.toString(),
-        sku: item.sku,
-        productId: item.product_id,
-        variantId: item.variant_id,
-        quantity: item.quantity,
-        title: item.title,
-        price: item.price,
-        currency: order.currency,
-        variantTitle: item.variant_title,
-        productName: item.name,
-        totalPrice: item.total_price,
-        customerDetails: order.customer,
-        properties: item.properties.reduce((acc, property) => {
-          acc[property.name] = property.value;
-          return acc;
-        }, {}),
-      }));
+
+      const personalizedOrderItems = lineItems.map((item) => {
+        const isRefunded = order.refunds && order.refunds.some(refund =>
+          refund.refund_line_items && refund.refund_line_items.some(refundLineItem =>
+            refundLineItem.line_item && refundLineItem.line_item.id === item.id
+          )
+        );
+        return {
+          orderId: order.id.toString(),
+          __typename: "order",
+          orderNumber: order?.order_number.toString(),
+          cancelledAt: order?.cancelled_at || null,
+          createdAt: order.created_at,
+          paymentStatus: order.financial_status,
+          fulfillmentStatus: item?.fulfillment_status,
+          billingAddress: order?.billing_address,
+          shippingAddress: order?.shipping_address,
+          defaultAddress: order?.default_address,
+          id: item.id.toString(),
+          sku: item.sku,
+          productId: item.product_id,
+          variantId: item.variant_id,
+          quantity: item.quantity,
+          title: item.title,
+          price: item.price,
+          currency: order.currency,
+          variantTitle: item.variant_title,
+          productName: item.name,
+          isRefunded,
+          totalPrice: item.total_price,
+          customerDetails: order.customer,
+          properties: item.properties.reduce((acc, property) => {
+            acc[property.name] = property.value;
+            return acc;
+          }, {}),
+        }
+      }
+      );
 
       // Prepare items for batch write
       const writeRequests = personalizedOrderItems.map((item) => ({
@@ -171,13 +181,13 @@ export const getOrders = async (queryParams) => {
       // Convert startDate and endDate to IST by adding 5 hours and 30 minutes
       const startIST = startDate
         ? new Date(
-            new Date(startDate).setHours(0, 0, 0, 0) + 19800000
-          ).toISOString() // Start of the day
+          new Date(startDate).setHours(0, 0, 0, 0) + 19800000
+        ).toISOString() // Start of the day
         : null; // 5 hours 30 minutes in milliseconds
       const endIST = endDate
         ? new Date(
-            new Date(endDate).setHours(23, 59, 59, 999) + 19800000
-          ).toISOString() // End of the day
+          new Date(endDate).setHours(23, 59, 59, 999) + 19800000
+        ).toISOString() // End of the day
         : null;
 
       if (startIST && endIST) {
