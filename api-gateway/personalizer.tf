@@ -153,6 +153,11 @@ resource "aws_apigatewayv2_route" "check_order_personalization_route" {
   target    = "integrations/${aws_apigatewayv2_integration.personalizer_lambda_integration.id}"
 }
 
+resource "aws_apigatewayv2_route" "delete_personalized_order_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /personalizer/delete-personalized-order"
+  target    = "integrations/${aws_apigatewayv2_integration.personalizer_lambda_integration.id}"
+}
 # orders fetch
 resource "aws_apigatewayv2_route" "fetch_orders_route" {
   api_id             = aws_apigatewayv2_api.http_api.id

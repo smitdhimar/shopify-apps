@@ -25,7 +25,7 @@ import {
   deleteProductConfig,
   getProductByProductId,
 } from "./productConfigHandler.mjs";
-import { checkOrderPersonalization, getOrders, searchOrders } from "./orderHandler.mjs";
+import { checkOrderPersonalization, getOrders, searchOrders, deletePersonalizedOrder } from "./orderHandler.mjs";
 import { generatePresignedUrl } from "./s3Handler.mjs";
 
 export const handler = async (event) => {
@@ -54,9 +54,6 @@ export const handler = async (event) => {
         return fetchImageSets();
       case "FETCH_IMAGE_SET":
         return fetchImageSet(pathParameters.id);
-
-      // case "IS_PRODUCT_CUSTOMIZED":
-
       case "UPDATE_IMAGE_SET":
         return updateImageSet(body, pathParameters.id);
       case "DELETE_IMAGE_SET":
@@ -87,6 +84,8 @@ export const handler = async (event) => {
         return deleteProductConfig(pathParameters.id);
       case "CHECK_ORDER_PERSONALIZATION":
         return checkOrderPersonalization(body);
+      case 'DELETE_PERSONALIZED_ORDER':
+        return deletePersonalizedOrder(body);
       case "GET_ORDERS":
         return getOrders(queryStringParameters);
       case "CHANGE_PRODUCT_STATUS":

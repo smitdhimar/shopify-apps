@@ -14,10 +14,11 @@ const tableName = process.env.PERSONALIZED_ORDERS_TABLE;
 
 export const checkOrderPersonalization = async (order) => {
   try {
+    console.log("🔥 Order received/updated/cancel-order:", JSON.stringify(order.id));
     const isPersonalized = order.line_items.some((item) =>
       item.properties.some(
         (property) =>
-          property.name === "devx-personalized" && property.value === "true"
+          (property.name === "Personalized" || property.name === 'devx-personalized') && property.value === "true"
       )
     );
 
@@ -26,7 +27,7 @@ export const checkOrderPersonalization = async (order) => {
       const lineItems = order.line_items.filter((item) =>
         item.properties.some(
           (property) =>
-            property.name === "devx-personalized" && property.value === "true"
+            (property.name === "Personalized" || property.name === 'devx-personalized') && property.value === "true"
         )
       );
 
@@ -308,6 +309,73 @@ export const searchOrders = async (queryParams) => {
     });
   } catch (error) {
     console.error("❌ Error in searching orders:", error);
+    return buildResponse(500, { message: error.message });
+  }
+};
+
+export const deletePersonalizedOrder = async (order) => {
+  try {
+    console.log("🔥 Order received for deletion:", JSON.stringify(order.id, null, 2));
+
+    if (!order?.id) {
+      return buildResponse(400, { message: "Invalid Order ID" });
+    }
+
+    const orderId = order?.id?.toString(); // Ensure orderId is a string
+
+    // Query to get all items with the matching orderId
+    const queryCommand = new QueryCommand({
+      TableName: tableName,
+      KeyConditionExpression: "orderId = :orderId",
+      ExpressionAttributeValues: {
+        ":orderId": orderId
+      },
+      ProjectionExpression: "orderId, id", // Retrieve only necessary attributes
+    });
+
+    const { Items } = await docClient.send(queryCommand);
+
+    if (!Items || Items.length === 0) {
+      return buildResponse(404, { message: "Order not found" });
+    }
+
+    // Prepare DeleteRequest items for batch operation
+    const deleteRequests = Items.map(item => ({
+      DeleteRequest: {
+        Key: {
+          orderId: item?.orderId, 
+          id: item?.id 
+        }
+      }
+    }));
+
+    // Batch operations can only handle 25 items at a time
+    const batches = [];
+    for (let i = 0; i < deleteRequests.length; i += 25) {
+      batches.push(deleteRequests.slice(i, i + 25));
+    }
+
+    // Execute all batch delete operations
+    const results = [];
+    for (const batch of batches) {
+      const batchCommand = new BatchWriteCommand({
+        RequestItems: {
+          [tableName]: batch
+        }
+      });
+      const result = await docClient.send(batchCommand);
+      results.push(result);
+    }
+
+    return buildResponse(200, {
+      message: `${Items.length} items deleted for order ID: ${orderId}`,
+      data: {
+        deletedCount: Items.length,
+        orderId
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error in deletePersonalizedOrder:", error);
     return buildResponse(500, { message: error.message });
   }
 };

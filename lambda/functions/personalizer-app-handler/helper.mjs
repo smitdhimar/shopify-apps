@@ -1,8 +1,6 @@
 export const getPathAction = (path, httpMethod) => {
   if (path === "/personalizer/image-sets" && httpMethod === "GET")
     return "FETCH_IMAGE_SETS";
-  // if (path === "/personalizer/product/{id}" && httpMethod === "POST")
-  //   return "IS_PRODUCT_CUSTOMIZED";
   if (path === "/personalizer/image-set/{id}" && httpMethod === "GET")
     return "FETCH_IMAGE_SET";
   if (path === "/personalizer/image-set/create" && httpMethod === "POST")
@@ -35,6 +33,8 @@ export const getPathAction = (path, httpMethod) => {
     return "CHANGE_PRODUCT_STATUS";
   if (path === "/personalizer/personalize-order" && httpMethod === "POST")
     return "CHECK_ORDER_PERSONALIZATION";
+  if(path=== "/personalizer/delete-personalized-order" && httpMethod === "POST")
+    return "DELETE_PERSONALIZED_ORDER";
   if (path === "/personalizer/orders" && httpMethod === "GET")
     return "GET_ORDERS";
   if (path === "/personalizer/product-config/{id}" && httpMethod === "GET")
