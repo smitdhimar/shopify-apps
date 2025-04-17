@@ -78,3 +78,50 @@ export const getShopifyProduct = async (params) => {
     return buildResponse(500, { message: error.message });
   }
 };
+
+export const getShopifyProductVariants = async (id) => {
+  try {
+    console.log("Receievd Id: ", id);
+    if(!id){
+      return buildResponse(500, { message: "No id was found for product." });
+    }
+    const query = null;
+    const searchQuery = `
+    query product {
+      product(id: "gid://shopify/Product/${id.toString()}") {
+        variants(first: 50) {
+          edges {
+            node {
+              title
+            }
+          }
+        }
+      }
+    }`;
+
+    const variables = query ? { query: query } : {};
+    const storeName = process.env.SHOPIFY_STORE_NAME;
+    const adminApiAccessToken = process.env.SHOPIFY_ADMIN_TOKEN;
+
+    const response = await fetchShopifyGql(
+      storeName,
+      searchQuery,
+      adminApiAccessToken,
+      variables
+    );
+
+    console.log("🔥 Search response:", response.data);
+
+    if (!response.data) {
+      throw new Error("Invalid response from Shopify");
+    }
+
+    return buildResponse(200, {
+      message: "Product Variant Fetched",
+      data: response?.data?.data?.product?.variants?.edges?.map((node) =>  node?.node?.title)
+    });
+  } catch (error) {
+    console.error("❌ Error in product variant search:", error);
+    return buildResponse(500, { message: error.message });
+  }
+};

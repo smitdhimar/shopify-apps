@@ -6,7 +6,7 @@ import {
   updateImageSet,
   deleteImageSet,
 } from "./imageSetCrud.mjs";
-import { getShopifyProduct } from "./shopifyHandler.mjs";
+import { getShopifyProduct, getShopifyProductVariants } from "./shopifyHandler.mjs";
 import { errorHandler } from "/opt/nodejs/helper.mjs";
 import { getPathAction } from "./helper.mjs";
 import {
@@ -27,6 +27,7 @@ import {
 } from "./productConfigHandler.mjs";
 import { checkOrderPersonalization, getOrders, searchOrders, deletePersonalizedOrder } from "./orderHandler.mjs";
 import { generatePresignedUrl } from "./s3Handler.mjs";
+import { getVariantsSizes, updateVariantSizes } from "./variantSizesHandler.mjs";
 
 export const handler = async (event) => {
   console.log("🔥 Event received:", event);
@@ -96,6 +97,12 @@ export const handler = async (event) => {
         return generatePresignedUrl(fileName, contentType);
       case "SEARCH_ORDERS":
         return searchOrders(queryStringParameters);
+      case "GET_VARIANTS":
+        return getShopifyProductVariants(pathParameters.id);
+      case "UPDATE_VARIANT_SIZES":
+        return updateVariantSizes(pathParameters.id, body);
+      case "GET_VARIANT_SIZES":
+        return getVariantsSizes(pathParameters.id);
       default:
         return buildResponse(404, { message: "❌ Resource Not Found" });
     }

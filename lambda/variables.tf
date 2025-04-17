@@ -60,6 +60,11 @@ variable "personalizer_product_config_table" {
   type        = string
 }
 
+variable "personalizer_product_size_table" {
+  description = "Personalizer product sizes table"
+  type        = string
+}
+
 variable "personalized_orders_table" {
   description = "Personalized orders table name"
   type        = string

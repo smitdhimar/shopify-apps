@@ -101,6 +101,22 @@ resource "aws_dynamodb_table" "personalizer_products" {
   }
 }
 
+#sizes table
+resource "aws_dynamodb_table" "personalizer_product_size_table" {
+  name           = "personalizer-variant-sizes"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 5
+  write_capacity = 5
+  hash_key       = "id"
+  attribute {
+    name = "id"
+    type = "S"
+  }
+  tags = {
+    Environment = "Developement"
+  }
+}
+
 # Product Config Table
 resource "aws_dynamodb_table" "product_config_table" {
   name           = "personalizer-product-config-table"

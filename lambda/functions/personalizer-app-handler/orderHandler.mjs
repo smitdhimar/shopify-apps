@@ -305,7 +305,7 @@ export const searchOrders = async (queryParams) => {
 
     return buildResponse(200, {
       message: "Orders returned successfully",
-      data: uniqueItems,
+      data: combinedItems,
     });
   } catch (error) {
     console.error("❌ Error in searching orders:", error);

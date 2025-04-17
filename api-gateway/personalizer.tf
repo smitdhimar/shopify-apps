@@ -191,3 +191,29 @@ resource "aws_apigatewayv2_route" "search_orders_route" {
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
+
+#GET /personalizer/variant-sizes/{id} Route
+resource "aws_apigatewayv2_route" "get_variant_sizes_route" {
+  api_id             = aws_apigatewayv2_api.http_api.id
+  route_key          = "GET /personalizer/variant-sizes/{id}"
+  target             = "integrations/${aws_apigatewayv2_integration.personalizer_lambda_integration.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+#POST /personlizer/variant-sizes/{id} Route
+resource "aws_apigatewayv2_route" "update_variant_sizes_route" {
+  api_id             = aws_apigatewayv2_api.http_api.id
+  route_key          = "PUT /personalizer/variant-sizes/{id}"
+  target             = "integrations/${aws_apigatewayv2_integration.personalizer_lambda_integration.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+#GET /personlizer/variants/{id} Route
+resource "aws_apigatewayv2_route" "get_product_variants_route" {
+  api_id             = aws_apigatewayv2_api.http_api.id
+  route_key          = "GET /personalizer/variants/{id}"
+  target             = "integrations/${aws_apigatewayv2_integration.personalizer_lambda_integration.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}

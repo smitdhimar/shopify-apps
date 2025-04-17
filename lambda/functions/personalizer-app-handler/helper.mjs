@@ -43,6 +43,11 @@ export const getPathAction = (path, httpMethod) => {
     return "GENERATE_PRESIGNED_URL";
   if (path === "/personalizer/search-orders" && httpMethod === "GET")
     return "SEARCH_ORDERS";
-
-  return "UNKNOWN";
+  if (path === "/personalizer/variant-sizes/{id}" && httpMethod === "GET")
+    return "GET_VARIANT_SIZES";
+  if (path === "/personalizer/variant-sizes/{id}" && httpMethod === "PUT")
+    return "UPDATE_VARIANT_SIZES";
+  if (path === "/personalizer/variants/{id}" && httpMethod === "GET")
+    return "GET_VARIANTS";
+    return "UNKNOWN";
 };
