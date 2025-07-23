@@ -1,5 +1,5 @@
 locals {
-  lambda_functions = ["fera-handler", "search-handler", "personalizer-app-handler", "contact-us-handler"]
+  lambda_functions = ["fera-handler", "search-handler", "personalizer-app-handler", "contact-us-handler", "webhook-handler", "blog-rating-handler", "update-blogs-stream-handler", "blogs-dynamodb-stream-handler"]
   layers           = ["api-helper", "package", "shopify-apis"]
 }
 # ======================= LAMBDA ROLE AND POLICY =======================
@@ -43,13 +43,35 @@ resource "aws_iam_policy" "iam_policy_for_lambda" {
         ],
         "Effect": "Allow"
       },
-       {
+      {
         "Effect": "Allow",
         "Action": [
           "ses:SendEmail",
           "ses:SendRawEmail"
         ],
         "Resource": "arn:aws:ses:*:*:*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ],
+        "Resource": "arn:aws:dynamodb:*:*:table/*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator",
+          "dynamodb:DescribeStream",
+          "dynamodb:ListStreams"
+        ],
+        "Resource": "arn:aws:dynamodb:*:*:table/*/stream/*"
       }
   ]
   }
@@ -76,7 +98,6 @@ data "archive_file" "zip_the_layer_code" {
 
 # Define Lambda layer versions for each layer
 resource "aws_lambda_layer_version" "api-helper" {
-
   layer_name          = "api-helper"
   filename            = data.archive_file.zip_the_layer_code["api-helper"].output_path
   source_code_hash    = data.archive_file.zip_the_layer_code["api-helper"].output_base64sha256
@@ -149,9 +170,9 @@ resource "aws_lambda_function" "contact-us-handler" {
       FROM_EMAIL = var.from_email
       TO_EMAIL   = var.to_email
     }
-
   }
 }
+
 resource "aws_lambda_function" "search-handler" {
   function_name    = "search-handler"
   role             = aws_iam_role.lambda_execution_role.arn
@@ -201,7 +222,6 @@ resource "aws_lambda_function" "personalizer-app-handler" {
     mode = "Active"
   }
 
-
   environment {
     variables = {
       IMAGE_SET_TABLE_NAME            = var.image_set_table_name
@@ -215,4 +235,121 @@ resource "aws_lambda_function" "personalizer-app-handler" {
       PRODUCT_VARIANT_SIZE_TABLE_NAME = var.personalizer_product_size_table
     }
   }
+}
+
+resource "aws_lambda_function" "webhook-handler" {
+  function_name    = "webhook-handler"
+  role             = var.backend_role_arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  filename         = data.archive_file.zip_the_lambda_code["webhook-handler"].output_path
+  source_code_hash = data.archive_file.zip_the_lambda_code["webhook-handler"].output_base64sha256
+  publish          = true
+  timeout          = 60
+  layers           = [aws_lambda_layer_version.api-helper.arn]
+  depends_on       = [aws_lambda_layer_version.api-helper]
+  tracing_config {
+    mode = "Active"
+  }
+  environment {
+    variables = {
+      BLOGS_TABLE  = var.blogs_table_name
+      STRAPI_URL   = var.strapi_url
+      STRAPI_TOKEN = var.strapi_api_token
+    }
+  }
+}
+
+resource "aws_lambda_function" "blog-rating-handler" {
+  function_name    = "blog-rating-handler"
+  role             = aws_iam_role.lambda_execution_role.arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  filename         = data.archive_file.zip_the_lambda_code["blog-rating-handler"].output_path
+  source_code_hash = data.archive_file.zip_the_lambda_code["blog-rating-handler"].output_base64sha256
+  publish          = true
+  timeout          = 60
+  layers           = [aws_lambda_layer_version.api-helper.arn]
+  depends_on       = [aws_lambda_layer_version.api-helper]
+  tracing_config {
+    mode = "Active"
+  }
+  environment {
+    variables = {
+      BLOGS_TABLE   = var.blogs_table_name
+      RATINGS_TABLE = var.blogs_rating_table_name
+    }
+  }
+}
+
+resource "aws_lambda_function" "update-blogs-stream-handler" {
+  function_name    = "update-blogs-stream-handler"
+  role             = var.blogs_stream_lambda_role_arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  filename         = data.archive_file.zip_the_lambda_code["update-blogs-stream-handler"].output_path
+  source_code_hash = data.archive_file.zip_the_lambda_code["update-blogs-stream-handler"].output_base64sha256
+  publish          = true
+  timeout          = 30
+  layers           = [aws_lambda_layer_version.api-helper.arn]
+  depends_on       = [aws_lambda_layer_version.api-helper]
+
+  tracing_config {
+    mode = "Active"
+  }
+
+  environment {
+    variables = {
+      BLOGS_TABLE   = var.blogs_table_name
+      RATINGS_TABLE = var.blogs_rating_table_name
+      STRAPI_URL    = var.strapi_url
+      STRAPI_TOKEN  = var.strapi_api_token
+    }
+  }
+
+  tags = {
+    Environment = "Developement"
+  }
+}
+
+resource "aws_lambda_function" "blogs-dynamodb-stream-handler" {
+  function_name    = "blogs-dynamodb-stream-handler"
+  role             = var.blogs_stream_lambda_role_arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  filename         = data.archive_file.zip_the_lambda_code["blogs-dynamodb-stream-handler"].output_path
+  source_code_hash = data.archive_file.zip_the_lambda_code["blogs-dynamodb-stream-handler"].output_base64sha256
+  publish          = true
+  timeout          = 30
+  layers           = [aws_lambda_layer_version.api-helper.arn]
+  depends_on       = [aws_lambda_layer_version.api-helper]
+
+  tracing_config {
+    mode = "Active"
+  }
+
+  environment {
+    variables = {
+      STRAPI_URL       = var.strapi_url
+      STRAPI_API_TOKEN = var.strapi_api_token
+    }
+  }
+
+  tags = {
+    Environment = "Developement"
+  }
+}
+
+# Event source mapping for blogs table stream
+resource "aws_lambda_event_source_mapping" "blogs_stream_mapping" {
+  event_source_arn  = var.blogs_table_stream_arn
+  function_name     = aws_lambda_function.blogs-dynamodb-stream-handler.arn
+  starting_position = "LATEST"
+}
+
+# Event source mapping for blogs rating table stream
+resource "aws_lambda_event_source_mapping" "blogs_rating_stream_mapping" {
+  event_source_arn  = var.blogs_rating_table_stream_arn
+  function_name     = aws_lambda_function.update-blogs-stream-handler.arn
+  starting_position = "LATEST"
 }

@@ -4,6 +4,8 @@ module "api_gateway" {
   search-handler           = module.lambda.search-handler
   personalizer-app-handler = module.lambda.personalizer-app-handler
   contact-us-handler       = module.lambda.contact-us-handler
+  webhook-handler          = module.lambda.webhook-handler
+  blog-rating-handler      = module.lambda.blog-rating-handler
   lambda_functions         = module.lambda.lambda_functions
   cognito_client_id        = module.cognitoPoolIdentity.cognito_client_id
   cognito_user_pool_id     = module.cognitoPoolIdentity.cognito_user_pool_id
@@ -29,6 +31,13 @@ module "lambda" {
   image_bucket                      = var.image_bucket
   from_email                        = var.from_email
   to_email                          = var.to_email
+  strapi_url                        = var.strapi_url
+  strapi_api_token                  = var.strapi_api_token
+  blogs_table_name                  = module.dynamo.blogs_table
+  blogs_rating_table_name           = module.dynamo.blogs_rating_table
+  blogs_stream_lambda_role_arn      = module.dynamo.blogs_stream_lambda_role_arn
+  blogs_table_stream_arn            = module.dynamo.blogs_table_stream_arn
+  blogs_rating_table_stream_arn     = module.dynamo.blogs_rating_table_stream_arn
 }
 
 module "s3_buckets" {

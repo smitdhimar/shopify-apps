@@ -61,6 +61,79 @@ resource "aws_iam_role" "backend_role" {
 }
 
 # --------------------------------
+# IAM role for the DynamoDB stream handler Lambda
+# --------------------------------
+
+resource "aws_iam_role" "blogs_stream_lambda_role" {
+  name = "blogs-stream-lambda-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# --------------------------------
+# IAM policy for DynamoDB stream access
+# --------------------------------
+
+resource "aws_iam_role_policy" "blogs_streams_lambda_policy" {
+  name = "blogs-streams-lambda-policy"
+  role = aws_iam_role.blogs_stream_lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator",
+          "dynamodb:DescribeStream",
+          "dynamodb:ListStreams"
+        ]
+        Resource = [
+          aws_dynamodb_table.blogs_table.stream_arn,
+          aws_dynamodb_table.blogs_rating_table.stream_arn
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ]
+        Resource = [
+          aws_dynamodb_table.blogs_table.arn,
+          aws_dynamodb_table.blogs_rating_table.arn
+        ]
+      }
+    ]
+  })
+}
+
+# --------------------------------
 # Dynamo DB Tables
 # --------------------------------
 
@@ -131,10 +204,6 @@ resource "aws_dynamodb_table" "product_config_table" {
   }
 }
 
-output "product_config_table_name" {
-  value = aws_dynamodb_table.product_config_table.name
-}
-
 # Personalized Orders Table
 resource "aws_dynamodb_table" "personalized_orders" {
   name         = "personalizer-order-table"
@@ -159,16 +228,16 @@ resource "aws_dynamodb_table" "personalized_orders" {
     hash_key        = "__typename"
     range_key       = "orderNumber"
     projection_type = "ALL"
-    read_capacity   = 5
-    write_capacity  = 5
+    read_capacity   = 0
+    write_capacity  = 0
   }
   global_secondary_index {
     name            = "personalized-orders-index"
     hash_key        = "__typename"
     range_key       = "createdAt"
     projection_type = "ALL"
-    read_capacity   = 5
-    write_capacity  = 5
+    read_capacity   = 0
+    write_capacity  = 0
   }
 
   global_secondary_index {
@@ -176,8 +245,8 @@ resource "aws_dynamodb_table" "personalized_orders" {
     hash_key        = "__typename"
     range_key       = "orderId"
     projection_type = "ALL"
-    read_capacity   = 5
-    write_capacity  = 5
+    read_capacity   = 0
+    write_capacity  = 0
   }
 
   attribute {
@@ -195,8 +264,49 @@ resource "aws_dynamodb_table" "personalized_orders" {
   }
 }
 
-output "personalized_orders_table_name" {
-  value = aws_dynamodb_table.personalized_orders.name
+# Blogs Table with DynamoDB Stream enabled
+resource "aws_dynamodb_table" "blogs_table" {
+  name         = "blogs-table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "blogId"
+
+  # Enable DynamoDB Stream
+  stream_enabled   = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
+
+  attribute {
+    name = "blogId"
+    type = "S"
+  }
+
+  tags = {
+    Environment = "Development"
+  }
+}
+
+#Blogs Rating Table
+resource "aws_dynamodb_table" "blogs_rating_table" {
+  name         = "blogs-rating-table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "blogId"
+  range_key    = "customerId"
+
+  # Enable DynamoDB Stream
+  stream_enabled   = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
+
+  attribute {
+    name = "blogId"
+    type = "S"
+  }
+
+  attribute {
+    name = "customerId"
+    type = "S"
+  }
+  tags = {
+    Environment = "Development"
+  }
 }
 
 # --------------------------------

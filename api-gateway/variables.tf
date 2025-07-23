@@ -18,6 +18,17 @@ variable "personalizer-app-handler" {
   type        = any
 }
 
+variable "webhook-handler" {
+  description = "The webhook handler lambda function for Strapi blog creation"
+  type        = any
+}
+
+variable "blog-rating-handler" {
+  description = "The blog rating handler lambda function for rating submissions"
+  type        = any
+}
+
+
 variable "lambda_functions" {
   description = "The name of the stack"
   type        = any

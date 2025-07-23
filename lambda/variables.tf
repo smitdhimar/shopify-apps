@@ -80,7 +80,42 @@ variable "from_email" {
   type        = string
 }
 variable "to_email" {
-  description = "to emai"
+  description = "to email"
   type        = string
+}
 
+variable "blogs_table_name" {
+  description = "Name of the blogs DynamoDB table"
+  type        = string
+}
+
+variable "blogs_rating_table_name" {
+  description = "Name of the blogs rating DynamoDB table"
+  type        = string
+}
+
+variable "strapi_url" {
+  description = "Strapi base URL"
+  type        = string
+}
+
+variable "strapi_api_token" {
+  description = "Strapi API token for authentication"
+  type        = string
+  sensitive   = true
+}
+
+variable "blogs_stream_lambda_role_arn" {
+  description = "ARN of the IAM role for blogs stream Lambda"
+  type        = string
+}
+
+variable "blogs_table_stream_arn" {
+  description = "ARN of the DynamoDB stream for blogs table"
+  type        = string
+}
+
+variable "blogs_rating_table_stream_arn" {
+  description = "ARN of the DynamoDB stream for blogs rating table"
+  type        = string
 }

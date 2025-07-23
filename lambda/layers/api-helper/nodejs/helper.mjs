@@ -25,8 +25,10 @@ export const buildResponse = (statusCode, body) => ({
   body: JSON.stringify(body),
 });
 
-//getPathAction currently only used for fera-handler. can be changed by adding prefix to path and then can be compared.
+// Enhanced getPathAction for blog platform
 export const getPathAction = (path, httpMethod) => {
+  if (path === "/webhook/strapi" && httpMethod === "POST") return "CREATE_BLOG";
+  if (path === "/rating" && httpMethod === "POST") return "SUBMIT_RATING";
   if (path === "/fera/reviews" && httpMethod === "GET") return "FETCH_REVIEWS";
   if (path === "/fera/review" && httpMethod === "POST") return "CREATE_REVIEW";
   if (path === "/fera/reviews/{id}" && httpMethod === "PUT")
@@ -44,10 +46,6 @@ export const fetchApi = async (
 ) => {
   const url = buildUrlWithParams(baseUrl, params);
 
-  console.log("🔥 url", url);
-  console.log("🔥 body", body);
-  console.log("🔥 params", params, typeof params);
-
   const response = await fetch(url, {
     method,
     headers: getHeaders(authConfig),
@@ -56,7 +54,6 @@ export const fetchApi = async (
 
   try {
     const data = await response.json();
-    console.log("🎉 response", data);
 
     if (!response.ok) {
       throw data;
@@ -80,4 +77,118 @@ const buildUrlWithParams = (baseUrl, params) => {
     });
   }
   return url.toString();
+};
+
+// ======================= BLOG PLATFORM HELPERS =======================
+
+// DynamoDB helper functions
+export const dynamoHelper = {
+  buildUpdateExpression: (updates) => {
+    const expressions = [];
+    const values = {};
+    const names = {};
+
+    Object.entries(updates).forEach(([key, value], index) => {
+      const attrName = `#attr${index}`;
+      const attrValue = `:val${index}`;
+
+      expressions.push(`${attrName} = ${attrValue}`);
+      names[attrName] = key;
+      values[attrValue] = value;
+    });
+
+    return {
+      UpdateExpression: `SET ${expressions.join(", ")}`,
+      ExpressionAttributeNames: names,
+      ExpressionAttributeValues: values,
+    };
+  },
+
+  handleDynamoError: (error) => {
+    console.error("DynamoDB Error:", error);
+
+    if (error.name === "ConditionalCheckFailedException") {
+      return buildResponse(409, {
+        message: "Item already exists or condition not met",
+      });
+    }
+
+    if (error.name === "ResourceNotFoundException") {
+      return buildResponse(404, { message: "Resource not found" });
+    }
+
+    if (error.name === "ProvisionedThroughputExceededException") {
+      return buildResponse(429, {
+        message: "Request rate too high, please try again",
+      });
+    }
+
+    return errorHandler(error);
+  },
+};
+
+// Validation helpers
+export const validateRating = (rating) => {
+  const allowedRatings = [25, 50, 75, 100];
+
+  if (!rating || typeof rating !== "number") {
+    return { isValid: false, error: "Rating must be a number" };
+  }
+
+  if (!allowedRatings.includes(rating)) {
+    return {
+      isValid: false,
+      error: "Rating must be one of: 25, 50, 75, or 100",
+    };
+  }
+
+  return { isValid: true };
+};
+
+export const validateBlogId = (blogId) => {
+  if (!blogId || typeof blogId !== "string") {
+    return { isValid: false, error: "Blog ID must be a string" };
+  }
+
+  return { isValid: true };
+};
+
+export const validateCustomerId = (customerId) => {
+  if (!customerId || typeof customerId !== "string") {
+    return { isValid: false, error: "Customer ID must be a string" };
+  }
+
+  return { isValid: true };
+};
+
+// Strapi helper functions
+export const strapiHelper = {
+  getAuthConfig: (token) => ({
+    tokenKeyConvention: "Authorization",
+    tokenForAuthorization: `${token}`,
+  }),
+
+  buildStrapiUrl: (baseUrl, endpoint) => {
+    return `${baseUrl.replace(/\/$/, "")}/api/${endpoint.replace(/^\//, "")}`;
+  },
+
+  updateBlogRating: async (strapiUrl, token, blogId, avgRating) => {
+    const authConfig = strapiHelper.getAuthConfig(token);
+
+    try {
+      // Then update using the document ID
+      const updateEndpoint = strapiHelper.buildStrapiUrl(
+        strapiUrl,
+        `blogs/${blogId}`
+      );
+      return await fetchApi(updateEndpoint, "PUT", authConfig, {
+        data: {
+          avg_rating: avgRating,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to update Strapi:", error);
+      return null;
+    }
+  },
 };
