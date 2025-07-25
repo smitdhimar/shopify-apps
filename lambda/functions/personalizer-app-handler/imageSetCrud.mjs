@@ -85,16 +85,21 @@ export const fetchImageSet = async (id) => {
 // update and return required fields
 export const updateImageSet = async (body, id) => {
   try {
-    // Prepare the update expression and attribute values
-    const updateExpression = Object.keys(body)
+    // Prepare the update expression and attribute values, including updatedAt
+    const now = new Date().toISOString();
+    const allFields = { ...body, updatedAt: now };
+
+    const updateExpression = Object.keys(allFields)
       .map((key) => `#${key} = :${key}`)
       .join(", ");
-    const expressionAttributeNames = Object.keys(body).reduce((acc, key) => {
+
+    const expressionAttributeNames = Object.keys(allFields).reduce((acc, key) => {
       acc[`#${key}`] = key;
       return acc;
     }, {});
-    const expressionAttributeValues = Object.keys(body).reduce((acc, key) => {
-      acc[`:${key}`] = body[key];
+
+    const expressionAttributeValues = Object.keys(allFields).reduce((acc, key) => {
+      acc[`:${key}`] = allFields[key];
       return acc;
     }, {});
 
