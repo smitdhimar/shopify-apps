@@ -2,6 +2,7 @@ import { buildResponse } from "/opt/nodejs/helper.mjs";
 import { v4 as uuidv4 } from "uuid";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
+  BatchGetCommand,
   DynamoDBDocumentClient,
   PutCommand,
   GetCommand,
@@ -15,6 +16,7 @@ const client = new DynamoDBClient({ region: "ap-south-1" });
 const docClient = DynamoDBDocumentClient.from(client);
 
 const tableName = process.env.PRODUCT_TABLE_NAME;
+const imageSetTableName = process.env.IMAGE_SET_TABLE_NAME;
 
 // get current tags
 const getTags = async (id) => {
@@ -121,6 +123,63 @@ export const getProduct = async (id) => {
 
     if (!result.Item) {
       return buildResponse(404, { message: "Product not found" });
+    }
+
+    if (
+      result?.Item?.canvas?.some(
+        (i) =>
+          i?.imageSet?.length > 0 &&
+          i?.imageSet?.[0] &&
+          typeof i?.imageSet?.[0] !== "object"
+      )
+    ) {
+    // Fetch all imageSet ids from the product's canvas
+    const imageSetIds = result.Item.canvas.find((i) => 
+      i?.imageSet?.length > 0 && 
+      i?.imageSet?.[0] && 
+      typeof i?.imageSet?.[0] !== "object"
+    )?.imageSet;
+    console.log("🔥 imageSetIds", imageSetIds);
+    if (imageSetIds.length > 0) {
+      // Prepare keys for BatchGetCommand
+      const keys = imageSetIds.map((id) => ({ id }));
+
+      // Batch get from image set table
+      const batchCommand = new BatchGetCommand({
+        RequestItems: {
+          [imageSetTableName]: {
+            Keys: keys,
+          },
+        },
+      });
+
+      const batchResult = await docClient.send(batchCommand);
+      const imageSets =
+        batchResult.Responses?.[
+          process.env.IMAGE_SET_TABLE_NAME || "personalizer-image-sets"
+        ] || [];
+
+      // Attach the fetched imageSet objects back to the canvas
+      result.Item.canvas = result.Item.canvas.map((canvasItem) => {
+        if (
+          Array.isArray(canvasItem?.imageSet) &&
+          canvasItem.imageSet.length > 0 &&
+          typeof canvasItem.imageSet[0] !== "object"
+        ) {
+          // Replace ids with the actual objects
+          const attachedImageSets = canvasItem.imageSet
+            .map((id) =>
+              imageSets.find((imgSet) => imgSet.id === id) || id
+            );
+          return {
+            ...canvasItem,
+            imageSet: attachedImageSets,
+          };
+        }
+        return canvasItem;
+      });
+    }
+
     }
 
     return buildResponse(200, {

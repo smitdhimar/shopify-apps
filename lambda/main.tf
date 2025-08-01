@@ -59,7 +59,8 @@ resource "aws_iam_policy" "iam_policy_for_lambda" {
           "dynamodb:UpdateItem",
           "dynamodb:DeleteItem",
           "dynamodb:Query",
-          "dynamodb:Scan"
+          "dynamodb:Scan",
+          "dynamodb:BatchGetItem"
         ],
         "Resource": "arn:aws:dynamodb:*:*:table/*"
       },
