@@ -18,6 +18,8 @@ export const tableName = process.env.IMAGE_SET_TABLE_NAME;
 
 // return id
 export const createImageSet = async (body) => {
+  // Ensure updatedAt field is present in the body
+  body.updatedAt = new Date().toISOString();
   body.id = uuidv4();
   console.log("🔥 body", body);
   try {
