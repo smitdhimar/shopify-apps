@@ -167,10 +167,19 @@ export const getProduct = async (id) => {
           typeof canvasItem.imageSet[0] !== "object"
         ) {
           // Replace ids with the actual objects
-          const attachedImageSets = canvasItem.imageSet
+          let attachedImageSets = canvasItem.imageSet
             .map((id) =>
               imageSets.find((imgSet) => imgSet.id === id) || id
             );
+          // Only sort if all are objects (i.e., all found)
+          if (
+            attachedImageSets.length > 0 &&
+            attachedImageSets.every((item) => typeof item === "object" && item.updatedAt)
+          ) {
+            attachedImageSets = attachedImageSets.sort(
+              (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+            );
+          }
           return {
             ...canvasItem,
             imageSet: attachedImageSets,
