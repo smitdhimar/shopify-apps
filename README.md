@@ -11,6 +11,9 @@ A backend middleware service that syncs Shopify products with external systems, 
 and provides secure APIs for storefront integrations.
 A IaaC (Infrastructure as a code) that sets up the overall cloud infrastructure with terraform . Manages multi environment setup for version management and uses various aws service to provide overall compute, storage and cloud management tools. 
 
+# Architecture
+![Architecture](asset/images/dfd_context.jpg)
+
 # Services and tools 
 - AWS
   - lambda
@@ -67,8 +70,9 @@ root/
 └── Makefile
 ```
 # Installation and working commands
-1) Terraform
-2) AWS account and IAM user setup
-3) terraform init
-4) terraform plan
-5) terraform apply
+1) Terraform setup
+2) shopify store setup 
+3) AWS account and IAM user setup
+4) terraform init
+5) terraform plan
+6) terraform apply
