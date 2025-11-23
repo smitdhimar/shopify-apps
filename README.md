@@ -1,5 +1,5 @@
-# AWS Terraform Practice
-A collection of Terraform configurations for deploying scalable AWS infrastructure (Lambda, API Gateway, DynamoDB, S3).
+# Shopify apps middleware/backend
+A IaaC for integration shopify, nextjs, and other apis. + serverless backend for personalizer app (Lambda, API Gateway, DynamoDB, S3, Cognito, cloudfront).
 
 # Tech stack
 ![Terraform](https://img.shields.io/badge/Terraform-000?style=for-the-badge&logo=terraform)
@@ -7,51 +7,62 @@ A collection of Terraform configurations for deploying scalable AWS infrastructu
 ![Node.js](https://img.shields.io/badge/Node.js-000?style=for-the-badge&logo=node.js)
 
 # Description
-A backend middleware service that syncs Shopify products with external systems, manages product data, inventory,
+A backend middleware service that syncs Shopify products with external systems, manages product data, order data,
 and provides secure APIs for storefront integrations.
 A IaaC (Infrastructure as a code) that sets up the overall cloud infrastructure with terraform . Manages multi environment setup for version management and uses various aws service to provide overall compute, storage and cloud management tools. 
 
 # Services and tools 
 - AWS
-  - Budgets
-  - EC2
   - lambda
   - Api gateway
-  - Resource explorer
-  - SNS
-  - VPC
   - Dynamo DB
-  - RDS
   - S3
+  - Cloudfront
+  - Cognito
 - Terraform for IaC
 
 # Folder structure
 ```tree
 root/
-├── environments/
-│   ├── dev/
-│   │   ├── main.tf
-│   │   ├── outputs.tf
-│   │   ├── variables.tf
-│   │   └── terraform.tfvars
-│   └── prod/
-├── modules/
-│   ├── billing_cost_budget/
-│   │   └── budgets/
-│   ├── compute/
-│   │   ├── ec2/
-│   │   └── lambda/
-│   ├── miscellaneous_service/
-│   │   ├── api_gateway/
-│   │   ├── resource_explorer/
-│   │   └── sns/
-│   ├── network/
-│   │   ├── security_groups/
-│   │   └── vpc/
-│   └── storage/
-│       ├── dynamoDB/
-│       ├── rds/
-│       └── s3/
+├── amplify/
+  ├── main.tf
+  ├── output.tf
+  ├── variables.tf
+├── api-gateway/
+  ├── main.tf
+  ├── blog.tf
+  ├── contact-us.tf
+  ├── fera.tf
+  ├── personalizer.tf
+  ├── search.tf
+  ├── variables.tf
+├── cloudfronts/
+  ├── main.tf
+  ├── output.tf
+  ├── variables.tf
+├── cognito/
+  ├── main.tf
+  ├── output.tf
+  ├── variables.tf
+├── dynamo/
+  ├── main.tf
+  ├── output.tf
+  ├── variables.tf
+├── lambda/
+  ├── functions/
+  ├── layers/
+  ├── main.tf
+  ├── output.tf
+  ├── variables.tf
+├── S3-buckets/
+  ├── main.tf
+  ├── output.tf
+  ├── variables.tf
+├── backend.tf
+├── .tfvars
+├── main.tf
+├── provider.tf
+├── variables.tf
 ├── .gitignore
 └── Makefile
 ```
